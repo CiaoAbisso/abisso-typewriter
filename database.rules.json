@@ -1,0 +1,44 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "p": {
+      "$pid": {
+        ".read": "$pid.length === 32",
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        "m": {
+          ".write": "$pid.length === 32 && ((root.child('p').child($pid).child('m').exists()) && newData.exists())",
+          "title": {
+            ".validate": "newData.isString() && newData.val().length < 300"
+          }
+        },
+        "b": {
+          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists()",
+          "$bid": {
+            ".validate": "newData.hasChildren(['t','x','k']) && newData.child('t').isString() && newData.child('x').isString() && newData.child('x').val().length < 20000 && newData.child('k').isNumber()"
+          }
+        },
+        "bd": {
+          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists()",
+          ".validate": "newData.isString() && newData.val().length < 500000"
+        },
+        "u": {
+          "$cid": {
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists()"
+          }
+        },
+        "h": {
+          "$hid": {
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && newData.exists() && (!data.exists() || data.child('start').val() === newData.child('start').val())"
+          }
+        },
+        "s": {
+          "$hid": {
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && newData.exists()",
+            ".validate": "newData.isString() && newData.val().length < 2000000"
+          }
+        }
+      }
+    }
+  }
+}
