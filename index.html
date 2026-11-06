@@ -1202,7 +1202,15 @@ function markDirty(){
   setSaveStatus(T("Modifiche non salvate"), "busy");
   saveSoon();
 }
-const saveSoon = debounce(() => saveNow(), 1500);
+const saveSoonSlow = debounce(() => saveNow(), 1500);
+let liveSaveT = null;
+/* shared scripts: send while typing (about 4 times a second) instead of waiting for a pause */
+function saveSoon(){
+  if (cur && cur.shared && typeof ONLINE!=="undefined" && ONLINE){
+    if (liveSaveT) return;
+    liveSaveT = setTimeout(() => { liveSaveT = null; saveNow(); }, 250);
+  } else saveSoonSlow();
+}
 let saving = null, saveAgain = false;
 async function saveNow(){
   if (!cur || cur.isSample || readOnly) return;
@@ -1565,7 +1573,7 @@ async function saveShared(d){
   shBase = local;
   writeCache();
   saveProject({sid, title: d.title, updated: Date.now(), byName: myName()});
-  await recordHistory(sid, before, local);
+  recordHistory(sid, before, local);
 }
 async function recordHistory(sid, before, after, label){
   const name = myName() || "?", now = Date.now();
