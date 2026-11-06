@@ -1208,7 +1208,7 @@ let liveSaveT = null;
 function saveSoon(){
   if (cur && cur.shared && typeof ONLINE!=="undefined" && ONLINE){
     if (liveSaveT) return;
-    liveSaveT = setTimeout(() => { liveSaveT = null; saveNow(); }, 250);
+    liveSaveT = setTimeout(() => { liveSaveT = null; saveNow(); }, 150);
   } else saveSoonSlow();
 }
 let saving = null, saveAgain = false;
@@ -1477,7 +1477,7 @@ function applyModel(m){
   ed.replaceChildren(...(nodes.length ? nodes : [makeEl("s","",uid())]));
   $("#scroller").scrollTop = top;
   if (hadFocus && cid){ const el = [...ed.children].find(e => e.dataset.id===cid); if (el) setCaret(el, Math.min(off, getText(el).length)); }
-  lastSnap = snap(); runTick();
+  lastSnap = snap(); tick();
 }
 function applyOnScreen(computedFrom, computed){
   const now = readModel();
@@ -1512,7 +1512,7 @@ ed.addEventListener("input", () => { if (cur && cur.shared) writeCacheSoon(); })
 
 /* remote blocks → ordered model */
 const remoteList = () => [...remoteMap.entries()].filter(([,v]) => v && typeof v==="object").sort((a,b) => (a[1].k - b[1].k) || (a[0] < b[0] ? -1 : 1)).map(([id,v]) => [v.t||"a", v.x||"", id]);
-function scheduleApply(){ clearTimeout(shApplyT); shApplyT = setTimeout(applyRemote, 90); }
+function scheduleApply(){ if (shApplyT) return; shApplyT = setTimeout(() => { shApplyT = null; applyRemote(); }, 30); }
 async function resyncAfterReconnect(){
   if (!cur || !cur.shared || !PID) return;
   try{
@@ -1524,7 +1524,7 @@ async function resyncAfterReconnect(){
 }
 function applyRemote(){
   if (!cur || !cur.shared) return;
-  if (composing || saving){ shApplyT = setTimeout(applyRemote, 500); return; }
+  if (composing || saving){ shApplyT = setTimeout(() => { shApplyT = null; applyRemote(); }, 120); return; }
   const remote = remoteList();
   const local = readModel();
   const merged = merge3(shBase, local, remote);
