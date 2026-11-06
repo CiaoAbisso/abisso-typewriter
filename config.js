@@ -1,12 +1,12 @@
 // Abisso Typewriter: collegamento a Firebase (questi valori non sono segreti).
 window.ABISSO_FIREBASE = {
-  apiKey: "AIzaSyCX0b-b1S6v8fWamPPFiVP3kFMtCEfqrCg",
-  authDomain: "abisso-typewriter.firebaseapp.com",
-  databaseURL: "https://abisso-typewriter-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "abisso-typewriter",
-  storageBucket: "abisso-typewriter.firebasestorage.app",
-  messagingSenderId: "779455305181",
-  appId: "1:779455305181:web:985d2cf9112996308cd234"
+  apiKey: "AIzaSyADglUnS7pdV_UJIv3aan2ZTb66kAmo_Ag",
+  authDomain: "abisso-typewriter-e4285.firebaseapp.com",
+  databaseURL: "https://abisso-typewriter-e4285-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "abisso-typewriter-e4285",
+  storageBucket: "abisso-typewriter-e4285.firebasestorage.app",
+  messagingSenderId: "688830211083",
+  appId: "1:688830211083:web:4b987ac9569480c150930e"
 };
 
 // L'autore: solo questo account Google può creare o eliminare copioni condivisi.
