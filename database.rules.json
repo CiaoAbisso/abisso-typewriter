@@ -52,6 +52,27 @@
           }
         }
       }
+    },
+    "b": {
+      "index": {
+        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
+      },
+      "my": {
+        "$ek": {
+          ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $ek",
+          ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
+        }
+      },
+      "p": {
+        "$pid": {
+          ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && data.child('members').child(auth.token.email.toLowerCase().replace('.', ',')).exists())",
+          ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+          "data": {
+            ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && (data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'ad'))"
+          }
+        }
+      }
     }
   }
 }

@@ -11,6 +11,7 @@ self.addEventListener("fetch", e => {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res; })));
     return;
   }
+  if (new URL(url).pathname.includes("/board/")) return;   // Abisso Board è un'app a parte: non la tocca
   if (new URL(url).origin === location.origin){
     e.respondWith(fetch(req).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); return res; }).catch(() => caches.match(req, {ignoreSearch:true}).then(hit => hit || caches.match("./index.html"))));
   }
