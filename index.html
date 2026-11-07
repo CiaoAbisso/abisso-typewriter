@@ -1267,6 +1267,9 @@ async function migrateLocal(cs){
 }
 async function useCloud(){
   if (!DB || !isAdmin() || !RT.uid()) return false;
+  try{ await Promise.race([RT.get("u/" + RT.uid() + "/i"), sleep(6000).then(() => { throw {code:"timeout"}; })]); }
+  catch(e){ if (e && e.code==="timeout") {} else return false; }   // regole non ancora attive: resta tutto com'era
+  lsSet("abt:cloud", "1");
   const cs = makeCloudStore(RT.uid());
   const n = await migrateLocal(cs);
   Store = cs; storeMode = "cloud";
@@ -1280,6 +1283,7 @@ async function signInCloud(){
   try{ await RT.signIn(); }catch(e){ toast(T("Accesso non riuscito. Riprova.")); return; }
   if (!isAdmin()){ toast(T("Questo account Google non è abilitato al cloud di Abisso Typewriter."), 4500); await RT.signOut(); return; }
   if (await useCloud()) toast(T("Fatto: i tuoi copioni ora si salvano nel cloud."));
+  else toast(T("Il cloud non è raggiungibile in questo momento."));
   if (view==="profile") renderProfile();
 }
 async function signOutCloud(){
@@ -2513,7 +2517,7 @@ async function renderProfile(){
     box.innerHTML = `
       <div class="who">${avatar ? `<img src="${esc(avatar)}" alt="">` : ""}
         <div><h2>${esc(name)}</h2><p>${esc(false ? T(n===1?"Profilo su questo browser · 1 copione":"Profilo su questo browser · {n} copioni",{n}) : T(n===1?"Il tuo spazio privato · 1 copione":"Il tuo spazio privato · {n} copioni",{n}))}</p></div></div>
-      ${DB && Store && (Store===LocalStore || Store.cloud) ? `<div class="pf-sec cloud-sec"><h3>${T("Cloud")}</h3>
+      ${DB && Store && (Store===LocalStore || Store.cloud) && (isAdmin() || lsGet("abt:cloud") || BOOT_HASH==="#cloud") ? `<div class="pf-sec cloud-sec"><h3>${T("Cloud")}</h3>
         ${Store && Store.cloud ? `<p class="note">${esc(T("Accesso con {e}. I copioni si salvano nel cloud: li ritrovi su ogni dispositivo e in Abisso Board.",{e:RT.email()}))}</p><div><button class="btn" data-pa="logout">${T("Esci")}</button></div>`
           : `<p class="note">${T("Ora i copioni restano solo su questo dispositivo. Entra con Google per salvarli nel cloud: li ritrovi su ogni dispositivo e in Abisso Board, per spoglio e piano di lavorazione.")}</p><div><button class="btn primary" data-pa="login">${T("Entra con Google")}</button></div>`}
       </div>` : ""}
