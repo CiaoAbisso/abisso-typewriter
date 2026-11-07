@@ -101,6 +101,7 @@ kbd{font-family:var(--f-ui);font-size:10px;letter-spacing:0;color:var(--muted);b
 .sc.cur{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--red)}
 .sc.cur .n{color:var(--red-ink)}
 .sc .n{font-family:var(--f-script);font-weight:700;color:var(--muted);text-align:right}
+.sc .revstar{font-weight:700;margin-right:2px;-webkit-text-stroke:.4px var(--ink)}
 .sc .h{min-width:0}
 .sc .h b{display:block;font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc .h i{font-style:normal;font-size:11.5px;color:var(--muted);letter-spacing:.04em}
@@ -406,6 +407,7 @@ const I18N = {"Copioni": {"en": "Scripts", "de": "Drehbücher", "fr": "Scénario
 const LANGS = ["it","en","de","fr","es","uk"];
 let UI = (() => { let l = null; try{ l = localStorage.getItem("abt:ui"); }catch(e){} if (!l){ const n = (navigator.language||"it").slice(0,2).toLowerCase(); l = LANGS.includes(n) ? n : "it"; } return LANGS.includes(l) ? l : "it"; })();
 const LOCALE = () => ({it:"it-IT", en:"en-GB", de:"de-DE", fr:"fr-FR", es:"es-ES", uk:"uk-UA"})[UI];
+Object.assign(I18N, {"Cloud": {"en": "Cloud", "de": "Cloud", "fr": "Cloud", "es": "Nube", "uk": "Хмара"}, "Esci": {"en": "Sign out", "de": "Abmelden", "fr": "Se déconnecter", "es": "Cerrar sesión", "uk": "Вийти"}, "Il cloud non è raggiungibile in questo momento.": {"en": "The cloud can't be reached right now.", "de": "Die Cloud ist gerade nicht erreichbar.", "fr": "Le cloud est inaccessible pour le moment.", "es": "La nube no está disponible en este momento.", "uk": "Хмара зараз недоступна."}, "Questo account Google non è abilitato al cloud di Abisso Typewriter.": {"en": "This Google account isn't enabled for the Abisso Typewriter cloud.", "de": "Dieses Google-Konto ist für die Abisso-Typewriter-Cloud nicht freigeschaltet.", "fr": "Ce compte Google n'est pas autorisé sur le cloud d'Abisso Typewriter.", "es": "Esta cuenta de Google no está habilitada en la nube de Abisso Typewriter.", "uk": "Цей обліковий запис Google не має доступу до хмари Abisso Typewriter."}, "Fatto: i tuoi copioni ora si salvano nel cloud.": {"en": "Done: your scripts are now saved to the cloud.", "de": "Fertig: Deine Drehbücher werden jetzt in der Cloud gespeichert.", "fr": "C'est fait : vos scénarios sont maintenant enregistrés dans le cloud.", "es": "Listo: tus guiones ahora se guardan en la nube.", "uk": "Готово: ваші сценарії тепер зберігаються в хмарі."}, "Sei uscito. Su questo dispositivo restano le copie locali.": {"en": "Signed out. Local copies stay on this device.", "de": "Abgemeldet. Die lokalen Kopien bleiben auf diesem Gerät.", "fr": "Déconnecté. Les copies locales restent sur cet appareil.", "es": "Has cerrado sesión. Las copias locales se quedan en este dispositivo.", "uk": "Ви вийшли. Локальні копії залишаються на цьому пристрої."}, "1 copione di questo dispositivo è stato portato nel cloud.": {"en": "1 script from this device was moved to the cloud.", "de": "1 Drehbuch von diesem Gerät wurde in die Cloud übertragen.", "fr": "1 scénario de cet appareil a été transféré dans le cloud.", "es": "1 guion de este dispositivo se ha subido a la nube.", "uk": "1 сценарій з цього пристрою перенесено в хмару."}, "{n} copioni di questo dispositivo sono stati portati nel cloud.": {"en": "{n} scripts from this device were moved to the cloud.", "de": "{n} Drehbücher von diesem Gerät wurden in die Cloud übertragen.", "fr": "{n} scénarios de cet appareil ont été transférés dans le cloud.", "es": "{n} guiones de este dispositivo se han subido a la nube.", "uk": "{n} сценаріїв з цього пристрою перенесено в хмару."}, "Accesso con {e}. I copioni si salvano nel cloud: li ritrovi su ogni dispositivo e in Abisso Board.": {"en": "Signed in as {e}. Scripts are saved to the cloud: you'll find them on every device and in Abisso Board.", "de": "Angemeldet als {e}. Drehbücher werden in der Cloud gespeichert: Du findest sie auf jedem Gerät und in Abisso Board.", "fr": "Connecté avec {e}. Les scénarios sont enregistrés dans le cloud : vous les retrouvez sur tous vos appareils et dans Abisso Board.", "es": "Sesión iniciada con {e}. Los guiones se guardan en la nube: los encuentras en todos tus dispositivos y en Abisso Board.", "uk": "Вхід як {e}. Сценарії зберігаються в хмарі: вони доступні на всіх пристроях і в Abisso Board."}, "Ora i copioni restano solo su questo dispositivo. Entra con Google per salvarli nel cloud: li ritrovi su ogni dispositivo e in Abisso Board, per spoglio e piano di lavorazione.": {"en": "Right now your scripts stay on this device only. Sign in with Google to save them to the cloud: you'll find them on every device and in Abisso Board, for breakdown and scheduling.", "de": "Im Moment bleiben deine Drehbücher nur auf diesem Gerät. Melde dich mit Google an, um sie in der Cloud zu speichern: Du findest sie auf jedem Gerät und in Abisso Board für Auszug und Drehplan.", "fr": "Pour l'instant, vos scénarios restent sur cet appareil. Connectez-vous avec Google pour les enregistrer dans le cloud : vous les retrouvez sur tous vos appareils et dans Abisso Board, pour le dépouillement et le plan de travail.", "es": "Ahora tus guiones solo están en este dispositivo. Entra con Google para guardarlos en la nube: los encuentras en todos tus dispositivos y en Abisso Board, para el desglose y el plan de rodaje.", "uk": "Зараз сценарії зберігаються лише на цьому пристрої. Увійдіть через Google, щоб зберігати їх у хмарі: вони будуть на всіх пристроях і в Abisso Board для розбивки та плану зйомок."}, "I tuoi copioni sono nel cloud: li vedi solo tu, da ogni dispositivo. Per scriverci con altre persone, condividili.": {"en": "Your scripts are in the cloud: only you can see them, from any device. To write with other people, share them.", "de": "Deine Drehbücher sind in der Cloud: Nur du siehst sie, auf jedem Gerät. Um mit anderen zu schreiben, teile sie.", "fr": "Vos scénarios sont dans le cloud : vous seul les voyez, depuis n'importe quel appareil. Pour écrire avec d'autres personnes, partagez-les.", "es": "Tus guiones están en la nube: solo tú los ves, desde cualquier dispositivo. Para escribir con otras personas, compártelos.", "uk": "Ваші сценарії в хмарі: їх бачите лише ви, з будь-якого пристрою. Щоб писати з іншими, поділіться ними."}, "Revisioni": {"en": "Revisions", "de": "Fassungen", "fr": "Révisions", "es": "Revisiones", "uk": "Редакції"}, "Bianca": {"en": "White", "de": "Weiß", "fr": "Blanche", "es": "Blanca", "uk": "Біла"}, "Blu": {"en": "Blue", "de": "Blau", "fr": "Bleue", "es": "Azul", "uk": "Синя"}, "Rosa": {"en": "Pink", "de": "Rosa", "fr": "Rose", "es": "Rosa", "uk": "Рожева"}, "Gialla": {"en": "Yellow", "de": "Gelb", "fr": "Jaune", "es": "Amarilla", "uk": "Жовта"}, "Verde": {"en": "Green", "de": "Grün", "fr": "Verte", "es": "Verde", "uk": "Зелена"}, "Oro": {"en": "Goldenrod", "de": "Gold", "fr": "Or", "es": "Dorada", "uk": "Золота"}, "Salmone": {"en": "Salmon", "de": "Lachs", "fr": "Saumon", "es": "Salmón", "uk": "Лососева"}, "Ciliegia": {"en": "Cherry", "de": "Kirsch", "fr": "Cerise", "es": "Cereza", "uk": "Вишнева"}, "Doppia {c}": {"en": "Double {c}", "de": "Doppelt {c}", "fr": "Double {c}", "es": "Doble {c}", "uk": "Подвійна {c}"}, "Revisione {n}": {"en": "{n} revision", "de": "Fassung {n}", "fr": "Révision {n}", "es": "Revisión {n}", "uk": "Редакція: {n}"}, "Rev. {n}": {"en": "Rev. {n}", "de": "Fass. {n}", "fr": "Rév. {n}", "es": "Rev. {n}", "uk": "Ред. {n}"}, "dal {d}": {"en": "since {d}", "de": "seit {d}", "fr": "depuis le {d}", "es": "desde el {d}", "uk": "з {d}"}, "1 scena cambiata da quando è iniziata questa revisione.": {"en": "1 scene changed since this revision started.", "de": "1 Szene seit Beginn dieser Fassung geändert.", "fr": "1 scène modifiée depuis le début de cette révision.", "es": "1 escena cambiada desde que empezó esta revisión.", "uk": "1 сцену змінено з початку цієї редакції."}, "{n} scene cambiate da quando è iniziata questa revisione.": {"en": "{n} scenes changed since this revision started.", "de": "{n} Szenen seit Beginn dieser Fassung geändert.", "fr": "{n} scènes modifiées depuis le début de cette révision.", "es": "{n} escenas cambiadas desde que empezó esta revisión.", "uk": "{n} сцен змінено з початку цієї редакції."}, "Nell'elenco delle scene hanno un asterisco.": {"en": "They're marked with an asterisk in the scene list.", "de": "In der Szenenliste sind sie mit einem Sternchen markiert.", "fr": "Elles portent un astérisque dans la liste des scènes.", "es": "En la lista de escenas llevan un asterisco.", "uk": "У списку сцен вони позначені зірочкою."}, "Quando consegni il copione e poi lo cambi, inizia una nuova revisione: le scene modificate vengono segnate e Abisso Board aggiorna lo spoglio solo dove serve.": {"en": "When you hand in the script and then change it, start a new revision: changed scenes get marked and Abisso Board updates the breakdown only where needed.", "de": "Wenn du das Drehbuch abgegeben hast und es danach änderst, beginne eine neue Fassung: Geänderte Szenen werden markiert, und Abisso Board aktualisiert den Auszug nur dort, wo nötig.", "fr": "Quand vous livrez le scénario puis le modifiez, commencez une nouvelle révision : les scènes modifiées sont signalées et Abisso Board met à jour le dépouillement seulement là où il le faut.", "es": "Cuando entregas el guion y luego lo cambias, empieza una nueva revisión: las escenas modificadas quedan marcadas y Abisso Board actualiza el desglose solo donde hace falta.", "uk": "Коли ви здали сценарій, а потім змінюєте його, почніть нову редакцію: змінені сцени позначаються, і Abisso Board оновлює розбивку лише там, де потрібно."}, "Inizia la revisione {n}": {"en": "Start {n} revision", "de": "Fassung {n} beginnen", "fr": "Commencer la révision {n}", "es": "Empezar la revisión {n}", "uk": "Почати редакцію: {n}"}, "Revisione {n} iniziata: da ora le scene che cambi vengono segnate.": {"en": "{n} revision started: from now on, scenes you change get marked.", "de": "Fassung {n} begonnen: Ab jetzt werden geänderte Szenen markiert.", "fr": "Révision {n} commencée : les scènes que vous modifiez seront désormais signalées.", "es": "Revisión {n} iniciada: desde ahora se marcan las escenas que cambies.", "uk": "Редакцію «{n}» розпочато: відтепер змінені сцени позначаються."}, "Cambiata in questa revisione": {"en": "Changed in this revision", "de": "In dieser Fassung geändert", "fr": "Modifiée dans cette révision", "es": "Cambiada en esta revisión", "uk": "Змінено в цій редакції"}});
 function T(k, v){ let s = (I18N[k] && I18N[k][UI]) || k; if (v) for (const n in v) s = s.split("{"+n+"}").join(v[n]); return s; }
 const LANG_NAMES = {it:"Italiano", en:"English", de:"Deutsch", fr:"Français", es:"Español", uk:"Українська"};
 /* screenplay vocabulary per script language */
@@ -998,7 +1000,7 @@ function renderStats(model){
   const words = model.reduce((n,[,x]) => n + (x.match(/\S+/g)||[]).length, 0);
   const pages = lastP.pages.length; const nsc = lastA.scenes.filter(s=>s.n>0).length;
   $("#stPages").textContent = `${T(pages===1?"{n} pagina":"{n} pagine",{n:pages})} · ~${pages}′`;
-  $("#stScenes").textContent = T(nsc===1?"{n} scena":"{n} scene",{n:nsc});
+  const rv = revOf(); $("#stScenes").textContent = T(nsc===1?"{n} scena":"{n} scene",{n:nsc}) + (rv && rv.i ? " · " + T("Rev. {n}",{n:revName(rv.i)}) : "");
   $("#stWords").textContent = T("{n} parole",{n:words.toLocaleString(LOCALE())});
 }
 function renderMarks(){
@@ -1115,7 +1117,8 @@ function renderSide(){
   if (sideTab==="scenes"){
     const sc = lastA.scenes.filter(s=>s.n>0);
     if (!sc.length){ L.innerHTML = `<p class="empty-note">${T("Nessuna scena ancora. Scrivi un'intestazione come <b>INT. CUCINA - NOTTE</b> o premi {k}.",{k:MOD+"1"})}</p>`; return; }
-    L.innerHTML = sc.map(s => `<button class="sc" data-i="${s.i}"><span class="n">${s.n}</span><span class="h"><b>${esc(s.loc)}</b><i>${esc([ieLabel(s.ie),s.time].filter(Boolean).join(" · "))}</i></span><span class="pg">p.${s.page} · ${eighths(s.e8)}</span></button>`).join("");
+    const ch = changedScenes(); const rc = revOf() ? revColor(revOf().i) : "";
+    L.innerHTML = sc.map(s => `<button class="sc" data-i="${s.i}"><span class="n">${ch.has(s.id) ? `<span class="revstar" style="color:${rc}" title="${esc(T("Cambiata in questa revisione"))}">*</span>` : ""}${s.n}</span><span class="h"><b>${esc(s.loc)}</b><i>${esc([ieLabel(s.ie),s.time].filter(Boolean).join(" · "))}</i></span><span class="pg">p.${s.page} · ${eighths(s.e8)}</span></button>`).join("");
     highlightScene(lastCaret.i);
   } else {
     const per = {};
@@ -1205,6 +1208,85 @@ function makeDBStore(db, userId){
       await col.doc("b_"+id).delete().catch(()=>{});
     }
   };
+}
+/* copioni personali nel cloud: Firebase Realtime Database, u/<uid>/i (indice) e u/<uid>/d (contenuto).
+   Ogni salvataggio va anche nella copia locale, così il copione si apre e si scrive anche offline. */
+const ADMINS = () => [...new Set([OWNER(), ...((window.ABISSO_ADMINS)||[]).map(x => String(x).toLowerCase())])].filter(Boolean);
+const isAdmin = () => !!(RT.email && RT.email() && ADMINS().includes(RT.email()));
+function makeCloudStore(uidv){
+  const base = "u/" + uidv;
+  const withTimeout = (p, ms) => Promise.race([p, sleep(ms).then(() => { throw {code:"timeout"}; })]);
+  return {
+    cloud: true,
+    get label(){ return T("Salvato nel cloud"); },
+    async list(){
+      let remote = null;
+      try{ remote = await withTimeout(RT.get(base + "/i"), 6000); }catch(e){}
+      const local = await LocalStore.list();
+      if (!remote) return local;
+      const m = new Map(Object.entries(remote).map(([id, x]) => [id, {id, title: x.title, updated: x.updated || 0}]));
+      return [...m.values()].sort((a,b) => b.updated - a.updated);
+    },
+    async load(id){
+      const local = await LocalStore.load(id);
+      let meta = null, data = null;
+      try{ [meta, data] = await withTimeout(Promise.all([RT.get(`${base}/i/${id}`), RT.get(`${base}/d/${id}`)]), 8000); }catch(e){ return local; }
+      if (!meta || !data) return local;
+      if (local && (local.updated||0) > (meta.updated||0)) return local;     // modifiche fatte offline e non ancora arrivate
+      const doc = {id, title: meta.title, created: meta.created, updated: meta.updated, titlePage: JSON.parse(data.tp || "{}"),
+        settings: JSON.parse(data.st || "{}"), breakdown: JSON.parse(data.bd || "{}"), body: JSON.parse(data.body || "[]")};
+      try{ lsSet("abt:s:"+id, JSON.stringify(doc)); }catch(e){}
+      return doc;
+    },
+    async save(doc){
+      try{ await LocalStore.save(doc); }catch(e){}
+      const upd = {};
+      upd[`${base}/i/${doc.id}`] = {title: doc.title || "", updated: doc.updated, created: doc.created || doc.updated, by: DEVICE};
+      upd[`${base}/d/${doc.id}`] = {body: JSON.stringify(doc.body), tp: JSON.stringify(doc.titlePage||{}), st: JSON.stringify(doc.settings||{}), bd: JSON.stringify(doc.breakdown||{})};
+      await rtWrite(RT.update(upd));
+    },
+    watch(id, cb){ try{ return RT.onValue(`${base}/i/${id}`, v => { if (v) cb(v); }); }catch(e){ return null; } },
+    async remove(id){
+      await LocalStore.remove(id);
+      const upd = {}; upd[`${base}/i/${id}`] = null; upd[`${base}/d/${id}`] = null;
+      await rtWrite(RT.update(upd));
+    }
+  };
+}
+/* porta nel cloud i copioni che finora stavano solo su questo dispositivo */
+async function migrateLocal(cs){
+  const local = await LocalStore.list(); if (!local.length) return 0;
+  let remote = {}; try{ remote = (await RT.get("u/" + RT.uid() + "/i")) || {}; }catch(e){ return 0; }
+  let n = 0;
+  for (const x of local){
+    if (remote[x.id] && (remote[x.id].updated||0) >= (x.updated||0)) continue;
+    const d = await LocalStore.load(x.id); if (!d) continue;
+    try{ await cs.save({...d, updated: d.updated || Date.now()}); n++; }catch(e){}
+  }
+  return n;
+}
+async function useCloud(){
+  if (!DB || !isAdmin() || !RT.uid()) return false;
+  const cs = makeCloudStore(RT.uid());
+  const n = await migrateLocal(cs);
+  Store = cs; storeMode = "cloud";
+  if (cur && !cur.isSample && !cur.shared){ watchCurrent(); if (dirty) saveNow(); }
+  setSaveStatus(Store.label, "");
+  if (n) toast(T(n===1 ? "1 copione di questo dispositivo è stato portato nel cloud." : "{n} copioni di questo dispositivo sono stati portati nel cloud.", {n}), 4500);
+  return true;
+}
+async function signInCloud(){
+  if (!DB){ toast(T("Il cloud non è raggiungibile in questo momento.")); return; }
+  try{ await RT.signIn(); }catch(e){ toast(T("Accesso non riuscito. Riprova.")); return; }
+  if (!isAdmin()){ toast(T("Questo account Google non è abilitato al cloud di Abisso Typewriter."), 4500); await RT.signOut(); return; }
+  if (await useCloud()) toast(T("Fatto: i tuoi copioni ora si salvano nel cloud."));
+  if (view==="profile") renderProfile();
+}
+async function signOutCloud(){
+  if (dirty) await saveNow();
+  await RT.signOut(); Store = LocalStore; storeMode = "local"; watchCurrent();
+  setSaveStatus(Store.label, "local"); toast(T("Sei uscito. Su questo dispositivo restano le copie locali."));
+  if (view==="profile") renderProfile();
 }
 function setSaveStatus(text, cls){ const s = $("#stSave"); s.textContent = text; s.className = "save" + (cls?" "+cls:""); }
 function markDirty(){
@@ -1452,7 +1534,9 @@ const RT = window.__RT_MOCK || {
   remove(p){ return this.m.remove(this.r(p)); },
   onChildren(p, h){ const r = this.r(p); const u = [this.m.onChildAdded(r, s => h.added(s.key, s.val())), this.m.onChildChanged(r, s => h.changed(s.key, s.val())), this.m.onChildRemoved(r, s => h.removed(s.key))]; return () => u.forEach(f => f()); },
   onValue(p, cb){ return this.m.onValue(this.r(p), s => cb(s.val())); },
-  onDisconnectRemove(p){ try{ this.m.onDisconnect(this.r(p)).remove(); }catch(e){} }
+  onDisconnectRemove(p){ try{ this.m.onDisconnect(this.r(p)).remove(); }catch(e){} },
+  uid(){ const u = this.auth && this.auth.currentUser; return u ? u.uid : ""; },
+  authReady(){ return new Promise(res => { const off = this.a.onAuthStateChanged(this.auth, () => { try{ off(); }catch(e){} res(); }); setTimeout(res, 5000); }); }
 };
 const OWNER = () => String(window.ABISSO_OWNER || "").toLowerCase();
 const isAuthor = () => !!(RT.email && RT.email() && RT.email()===OWNER());
@@ -2217,6 +2301,7 @@ $("#btnMenu").addEventListener("click", e => {
     <hr>
     <button data-m="pages">${T(pagesOn ? "Passa al flusso continuo" : "Passa alla vista a pagine")}</button>
     <button data-m="title">${T("Frontespizio")}</button>
+    <button data-m="rev">${T("Revisioni")}</button>
     <button data-m="settings">${T("Impostazioni pagina")}</button>
     <button data-m="keys" class="only-d">${T("Scorciatoie")}</button>
   </div>`);
@@ -2224,7 +2309,7 @@ $("#btnMenu").addEventListener("click", e => {
     const lb = ev.target.closest("[data-lang]"); if (lb){ setUI(lb.dataset.lang); closeOverlay(); return; }
     const mb = ev.target.closest("[data-mode]"); if (mb){ setMode(mb.dataset.mode); closeOverlay(); return; }
     const m = ev.target.closest("button")?.dataset.m; if (!m) return; closeOverlay();
-    ({pages:()=>setPages(!pagesOn), share:makeShared, hist:showHistory, scripts:()=>setView("profile"), new:()=>newScript(), import:()=>$("#fileIn").click(), fountain:exportFountain, title:showTitle, settings:showSettings, keys:showKeys})[m]();
+    ({pages:()=>setPages(!pagesOn), share:makeShared, hist:showHistory, scripts:()=>setView("profile"), new:()=>newScript(), import:()=>$("#fileIn").click(), fountain:exportFountain, title:showTitle, rev:showRevision, settings:showSettings, keys:showKeys})[m]();
   });
 });
 async function showScripts(){
@@ -2235,7 +2320,7 @@ async function showScripts(){
     <div class="slist">${list.length ? list.map(s => `<div class="sitem ${cur && s.id===cur.id?"cur":""}"><div><b>${esc(s.title||T("Senza titolo"))}</b><small>${T("Modificato {d}",{d:fmt(s.updated)})}</small></div>
       <button class="btn" data-open="${s.id}">${T(cur && s.id===cur.id?"Aperto":"Apri")}</button><button class="btn" data-dup="${s.id}">${T("Duplica")}</button><button class="btn danger" data-del="${s.id}">${T("Elimina")}</button></div>`).join("")
       : `<p class="empty-note">${T("Nessun copione salvato.")} ${cur && cur.isSample ? T("Quello aperto è un esempio: appena lo modifichi viene salvato.") : ""}</p>`}</div>
-    <p class="empty-note" style="padding:12px 0 0">${esc(T("I copioni privati restano su questo dispositivo. Per lavorarci da più dispositivi o con altre persone, condividili."))}</p>
+    <p class="empty-note" style="padding:12px 0 0">${esc(Store && Store.cloud ? T("I tuoi copioni sono nel cloud: li vedi solo tu, da ogni dispositivo. Per scriverci con altre persone, condividili.") : T("I copioni privati restano su questo dispositivo. Per lavorarci da più dispositivi o con altre persone, condividili."))}</p>
     <div class="row"><button class="btn" data-close>${T("Chiudi")}</button></div></div>`);
   const md = $("#overlay .modal");
   md.addEventListener("click", async ev => {
@@ -2252,6 +2337,34 @@ async function showScripts(){
       showScripts(); toast(T("Copione eliminato."));
     }
   });
+}
+/* revisioni a colori (ordine standard). Salvate in cur.breakdown._rev, così viaggiano anche nei copioni condivisi
+   e Abisso Board sa quali scene sono cambiate: base = impronta di ogni scena quando la revisione è iniziata. */
+const REVS = [["Bianca","#ffffff"],["Blu","#5b8def"],["Rosa","#f28cb1"],["Gialla","#f5d142"],["Verde","#5fbf77"],["Oro","#d4a72c"],["Salmone","#f4a582"],["Ciliegia","#c2185b"]];
+const revOf = () => (cur && cur.breakdown && cur.breakdown._rev) || null;
+const revName = i => { const r = REVS[i % REVS.length]; return i >= REVS.length ? T("Doppia {c}",{c:T(r[0]).toLowerCase()}) : T(r[0]); };
+const revColor = i => REVS[i % REVS.length][1];
+function changedScenes(){
+  const r = revOf(); if (!r || !r.i) return new Set();
+  return new Set(lastA.scenes.filter(s => s.n>0 && r.base[s.id] !== s.sig).map(s => s.id));
+}
+function showRevision(){
+  const r = revOf(); const i = r ? r.i : 0; const ch = changedScenes();
+  const fmt = t => new Date(t).toLocaleDateString(LOCALE(),{day:"numeric",month:"long",year:"numeric"});
+  overlay(`<div class="modal" role="dialog" aria-label="${T("Revisioni")}"><h3>${T("Revisioni")}</h3>
+    <p class="empty-note" style="padding:0"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid var(--line);background:${revColor(i)};vertical-align:-1px"></span>
+      <b>${esc(T("Revisione {n}",{n:revName(i)}))}</b>${r && r.date ? " · " + esc(T("dal {d}",{d:fmt(r.date)})) : ""}</p>
+    <p class="empty-note" style="padding:0">${i ? esc(T(ch.size===1 ? "1 scena cambiata da quando è iniziata questa revisione." : "{n} scene cambiate da quando è iniziata questa revisione.",{n:ch.size})) + (ch.size ? " " + esc(T("Nell'elenco delle scene hanno un asterisco.")) : "")
+      : esc(T("Quando consegni il copione e poi lo cambi, inizia una nuova revisione: le scene modificate vengono segnate e Abisso Board aggiorna lo spoglio solo dove serve."))}</p>
+    <div class="row"><button class="btn" data-close>${T("Chiudi")}</button><button class="btn primary" data-new>${esc(T("Inizia la revisione {n}",{n:revName(i+1)}))}</button></div></div>`);
+  const md = $("#overlay .modal");
+  md.querySelector("[data-close]").onclick = closeOverlay;
+  md.querySelector("[data-new]").onclick = () => {
+    const base = {}; lastA.scenes.forEach(s => { if (s.n>0) base[s.id] = s.sig; });
+    cur.breakdown._rev = {i: i+1, date: Date.now(), name: REVS[(i+1) % REVS.length][0], color: revColor(i+1), base};
+    cur.isSample = false; markBD(); closeOverlay(); renderSide(); renderStats(readModel());
+    toast(T("Revisione {n} iniziata: da ora le scene che cambi vengono segnate.",{n:revName(i+1)}), 4000);
+  };
 }
 function showTitle(){
   const tp = cur.titlePage || {};
@@ -2400,6 +2513,10 @@ async function renderProfile(){
     box.innerHTML = `
       <div class="who">${avatar ? `<img src="${esc(avatar)}" alt="">` : ""}
         <div><h2>${esc(name)}</h2><p>${esc(false ? T(n===1?"Profilo su questo browser · 1 copione":"Profilo su questo browser · {n} copioni",{n}) : T(n===1?"Il tuo spazio privato · 1 copione":"Il tuo spazio privato · {n} copioni",{n}))}</p></div></div>
+      ${DB && Store && (Store===LocalStore || Store.cloud) ? `<div class="pf-sec cloud-sec"><h3>${T("Cloud")}</h3>
+        ${Store && Store.cloud ? `<p class="note">${esc(T("Accesso con {e}. I copioni si salvano nel cloud: li ritrovi su ogni dispositivo e in Abisso Board.",{e:RT.email()}))}</p><div><button class="btn" data-pa="logout">${T("Esci")}</button></div>`
+          : `<p class="note">${T("Ora i copioni restano solo su questo dispositivo. Entra con Google per salvarli nel cloud: li ritrovi su ogni dispositivo e in Abisso Board, per spoglio e piano di lavorazione.")}</p><div><button class="btn primary" data-pa="login">${T("Entra con Google")}</button></div>`}
+      </div>` : ""}
       <div class="pf-sec"><h3>${T("I miei copioni")}</h3>
         <div class="pf-bar"><input id="pfSearch" type="search" placeholder="${T("Cerca per titolo")}" aria-label="${T("Cerca per titolo")}" value="${esc(pfQuery)}">
           <button class="btn primary" data-pa="new">${T("Nuovo copione")}</button><button class="btn" data-pa="import">${T("Importa file")}</button></div>
@@ -2441,6 +2558,8 @@ $("#pfIn").addEventListener("click", async e => {
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.pa==="new"){ await newScript(); setView("write"); return; }
   if (b.dataset.pa==="import"){ $("#fileIn").click(); return; }
+  if (b.dataset.pa==="login"){ await signInCloud(); return; }
+  if (b.dataset.pa==="logout"){ await signOutCloud(); return; }
   if (b.dataset.po){ if (!cur || b.dataset.po!==cur.id) await openScript(b.dataset.po); setView("write"); return; }
   if (b.dataset.pd){ const d = await Store.load(b.dataset.pd); if (!d) return; await newScript(d.body.map(x=>[x[0],x[1]]), {...d.titlePage, _lang:(d.settings||{}).lang}, (d.title||T("Senza titolo"))+T(" (copia)")); toast(T("Copia creata.")); setView("profile"); return; }
   if (b.dataset.px){
@@ -2501,6 +2620,9 @@ async function boot(){
   let list = [];
   try{ list = await Store.list(); }catch(e){ Store = LocalStore; list = await LocalStore.list(); }
   setSaveStatus(cur.isSample ? (Store===LocalStore ? T("Esempio · si salva su questo dispositivo quando scrivi") : T("Esempio · si salva nel cloud quando scrivi")) : Store.label, Store===LocalStore?"local":"");
+  if (Store===LocalStore && DB && RT.authReady){
+    try{ await RT.authReady(); if (isAdmin() && await useCloud()) list = await Store.list(); }catch(e){}
+  }
   const hm = BOOT_HASH.match(/^#c-([a-z0-9]+)$/);
   if (hm && DB){ await openShared(hm[1]); return; }
   if (list.length && cur.isSample && !dirty){

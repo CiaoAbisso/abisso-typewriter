@@ -39,6 +39,19 @@
           }
         }
       }
+    },
+    "u": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        "d": {
+          "$sid": {
+            "body": {
+              ".validate": "newData.isString() && newData.val().length < 5000000"
+            }
+          }
+        }
+      }
     }
   }
 }
