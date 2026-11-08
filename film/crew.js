@@ -6,7 +6,7 @@ const CONTRACTS = ["Dipendente (CCNL troupe)","Autonomo con P.IVA","Prestazione 
 const ATTACH = ["Busta paga","UNILAV","Notula / fattura","Rimborsi","CV","Documento d'identità","Contratto"];
 const CR = {people:{}, eng:{}, off:null, pid:null, ready:false, t:{}};
 const deptOf = k => DEPTS.find(d => d.k===k) || {k, l:k||"—", cats:[], roles:[]};
-const canCrew = () => ["admin","prod"].includes(Cloud.myRole());
+const canCrew = () => Cloud.myRole()==="admin" || ["troupe","budget","produzione","dossier"].some(k => areaAccess(k)!=="-");
 const uidc = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
 
 async function crewLoad(){
@@ -121,7 +121,7 @@ function vPerson(){
     <section class="lsec"><h3>Altre informazioni</h3>${F("Alimentazione", sel("data-pf","diet",p.diet||"",["","Nessuna esigenza","Vegetariana","Vegana","Altro (vedi note)"]))}${F("Note", pin("notes",p))}</section></div>
   <div class="lcols two"><section class="lsec"><h3>Accesso al Film Manager</h3>
       <p class="note">${p.email ? (access ? `Ha accesso come ${esc(ROLE_L[access[1].role]||access[1].role)}.` : "Non ha accesso.") : "Serve l'email per dare l'accesso."}</p>
-      <div class="row">${sel("id","accRole",access?access[1].role:"",[["","Nessun accesso"],["dept","Reparto: vede lo spoglio del suo reparto"],["ad","Aiuto regia"],["prod","Produzione"]])}<button class="btn" data-acc="${id}" ${p.email?"":"disabled"}>Applica</button></div>
+      <div class="row">${sel("id","accRole",access?access[1].role:"",[["","Nessun accesso"],["dept","Reparto: vede lo spoglio del suo reparto"],["autore","Autore: solo il copione"],["regia","Regia"],["ad","Aiuto regia"],["prod","Produzione"]])}<button class="btn" data-acc="${id}" ${p.email?"":"disabled"}>Applica</button></div>
       <button class="btn" data-senddept="${id}" ${p.email?"":"disabled"} style="justify-self:start">Invia lo spoglio del reparto</button></section>
     <section class="lsec"><h3>Allegati</h3><p class="note">Incolla il link del file su Google Drive.</p>
       ${ATTACH.map((a,i) => F(a, `<span class="row" style="gap:6px;flex-wrap:nowrap"><input data-ef="att.${i}" value="${esc((e.att||{})[i]||"")}" placeholder="https://drive.google.com/…">${(e.att||{})[i] ? `<a class="btn" href="${esc(e.att[i])}" target="_blank" rel="noopener">Apri</a>` : ""}</span>`)).join("")}</section></div>

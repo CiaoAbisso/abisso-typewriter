@@ -302,3 +302,54 @@ ol.sched li{border-radius:10px}
   .labor .person{flex-direction:column}
 }
 .person .pbar button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- barra delle aree sempre fissa in basso ---------- */
+.areas{position:fixed;z-index:40;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));margin:0;width:max-content;max-width:calc(100% - 24px);justify-self:auto}
+.view{padding-bottom:104px}
+.areas button.locked{opacity:.4}
+.areas button.locked:hover{color:var(--ink)}
+.areas .lk{position:absolute;top:3px;left:calc(50% + 6px);width:16px;height:16px;border-radius:50%;background:var(--side);display:grid;place-items:center}
+.areas .lk svg{width:11px;height:11px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.areas .ey{position:absolute;top:6px;left:calc(50% + 9px);width:8px;height:8px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 2px var(--side)}
+.nav .pill.rule{background:transparent;border:1.5px solid var(--blue);color:var(--blue)}
+/* tabella degli accessi */
+.accmx table{min-width:1080px}
+.accmx th{text-align:center;vertical-align:bottom;font-size:10.5px}
+.accmx th:first-child,.accmx th:nth-child(2){text-align:left}
+.accmx th svg{width:17px;height:17px;display:block;margin:0 auto 4px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.accmx th svg .fill{fill:currentColor;stroke:none}
+.accmx td{text-align:center;vertical-align:middle}
+.accmx td:first-child,.accmx td:nth-child(2){text-align:left}
+.accmx td.acts{white-space:nowrap;text-align:right}
+.accmx td.acts .btn{height:30px;font-size:12px;padding:0 12px;margin-left:4px}
+.accmx select{height:30px;border-radius:15px!important;padding:0 8px;font-size:12px;border:1.5px solid var(--line2)!important;background:transparent!important}
+.accmx select.acc-e{background:var(--red)!important;border-color:var(--red)!important;color:#fff}
+.accmx select.acc-v{border-color:var(--blue)!important;color:var(--blue)}
+.accmx select.acc-n{color:var(--muted)}
+#inv{margin-bottom:6px}
+/* ---------- telefono: si legge come un sito ---------- */
+@media (max-width:760px){
+  .top{padding-block:10px 6px;gap:10px;flex-wrap:nowrap}
+  .brand img{width:84px} .brand span{font-size:7.5px;letter-spacing:.28em}
+  .proj{min-width:0;flex:1;padding-left:10px} .proj b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px} .proj small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px}
+  .tools{flex-wrap:nowrap;gap:6px} .tools .btn{height:32px;padding:0 10px;font-size:12px} .tools .sync{display:none} #langSel{display:none}
+  .nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-inline:max(12px,env(safe-area-inset-left,0px))} .nav::-webkit-scrollbar{display:none}
+  .nav button{flex:none;height:34px;padding:0 14px;font-size:13px}
+  .areas{left:0;right:0;transform:none;width:auto;max-width:none;bottom:0;border-radius:20px 20px 0 0;border-bottom:0;justify-content:flex-start;overflow-x:auto;scrollbar-width:none;padding:6px max(6px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px))}
+  .areas::-webkit-scrollbar{display:none}
+  .areas button{flex:none;min-width:62px;padding:6px 6px 5px;font-size:10.5px;gap:3px} .areas button svg{width:21px;height:21px}
+  .areas button.on::before{top:-6px;left:14px;right:14px}
+  .view{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+  .wrap,.wrap.wide{padding-inline:max(14px,env(safe-area-inset-left,0px))}
+  .head{flex-direction:column;align-items:stretch;gap:10px} .head .row{flex-wrap:wrap}
+  h2{font-size:22px}
+  .box:has(> h3:first-child){margin-top:34px}
+  .grid2{grid-template-columns:1fr}
+  .people{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .person .pbar{flex-direction:column}
+  .tbl,.accmx{overflow-x:auto}
+  .modal{width:calc(100% - 24px);max-height:calc(100dvh - 40px);overflow:auto}
+  .cs2{padding:12px} .cshead .ttl{font-size:20px} .cshead .callbox input,.cshead .callbox .call{font-size:24px;width:150px}
+  .deck{gap:14px}
+}

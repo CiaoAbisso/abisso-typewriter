@@ -190,7 +190,7 @@ function boot(first){
 /* ================= interfaccia ================= */
 const VIEWS = [["spoglio","Spoglio"],["strisce","Strisce"],["calendario","Calendario"],["dood","DOOD"],["report","Report"],["odg","Ordine del giorno"],["squadra","Squadra"]];
 function role(){ const r = Cloud.myRole(); if (r==="admin"){ const v = $("#roleSel") && $("#roleSel").value; return v || "admin"; } return r; }
-const isRO = () => ["dept","guest"].includes(role());
+const isRO = () => ["dept","guest"].includes(role()) || (typeof areaAccess==="function" && S && areaAccess(areaOf(S.view).k)!=="e");
 function canEditPlan(){ return ["admin","prod","ad"].includes(Cloud.myRole()); }
 const deptCats = () => Cloud.myRole()==="admin" ? ["cost"] : Cloud.myCats();
 function renderNav(){

@@ -22,26 +22,28 @@ const AREAS = [
 ];
 const svgIco = k => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICO[k]||""}</svg>`;
 const areaOf = v => AREAS.find(a => a.views.some(x => x[0]===v)) || AREAS[1];
-const areaOk = a => !a.need || canCrew();
+const areaOk = a => areaAccess(a.k)!=="-";
 function renderAreas(){
   const cur = areaOf(S.view);
-  $("#areas").innerHTML = AREAS.filter(areaOk).map(a => `${a.sep ? `<span class="sep" aria-hidden="true"></span>` : ""}<button data-area="${a.k}" class="${a===cur?"on":""}" aria-label="${esc(a.l)}" ${a===cur?'aria-current="page"':""}>${svgIco(a.k)}<span>${esc(T(a.l))}</span></button>`).join("");
+  $("#areas").innerHTML = AREAS.map(a => { const acc = areaAccess(a.k); const lock = acc==="-";
+    return `${a.sep ? `<span class="sep" aria-hidden="true"></span>` : ""}<button data-area="${a.k}" class="${a===cur?"on":""} ${lock?"locked":""}" aria-label="${esc(a.l)}${lock?" (chiusa)":acc==="v"?" (sola lettura)":""}" ${lock?'aria-disabled="true"':""} ${a===cur?'aria-current="page"':""}>${svgIco(a.k)}${lock ? `<i class="lk" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></i>` : acc==="v" ? `<i class="ey" aria-hidden="true"></i>` : ""}<span>${esc(T(a.l))}</span></button>`; }).join("");
   $("#areas").hidden = false;
 }
 renderNav = function(){
   const a = areaOf(S.view); const hid = role()==="admin" ? [] : ["squadra"];
-  $("#nav").innerHTML = `<span class="area-name">${svgIco(a.k)}${esc(T(a.l))}</span>` + (a.views.length > 1 ? a.views.filter(v => !hid.includes(v[0])).map(([k,l]) => `<button data-v="${k}" class="${S.view===k?"on":""}">${esc(T(l))}</button>`).join("") : "");
+  $("#nav").innerHTML = `<span class="area-name">${svgIco(a.k)}${esc(T(a.l))}</span>` + (areaAccess(a.k)==="v" ? `<span class="pill rule">Sola lettura</span>` : "") + (a.views.length > 1 ? a.views.filter(v => !hid.includes(v[0])).map(([k,l]) => `<button data-v="${k}" class="${S.view===k?"on":""}">${esc(T(l))}</button>`).join("") : "");
 };
 const VIEWFN = () => ({spoglio:vSpoglio, strisce:vStrisce, calendario:vCal, dood:vDood, report:vReport, odg:vOdg, squadra:vTeam, copione:vCopione, crewlist:vCrew, persona:vPerson, budget:vBudget, trasporti:vTrasporti,
   prodinfo:vProdInfo, prodpeople:vProdPeople, prodmedia:vProdMedia, dossier:vDossier});
 const AFTER = {spoglio:() => afterSpoglio(), strisce:() => afterStrisce(), calendario:() => afterCal()};
 render = function(){
-  if (!areaOk(areaOf(S.view)) || (S.view==="squadra" && role()!=="admin")) S.view = "spoglio";
+  if (S.view==="squadra" && role()!=="admin") S.view = "crewlist";
+  if (!areaOk(areaOf(S.view))){ const v0 = firstOpenView(); if (v0) S.view = v0; else { renderTop(); $("#nav").innerHTML = ""; renderAreas(); $("#view").innerHTML = `<div class="wrap"><div class="box"><h3>Nessuna area aperta</h3><p class="note" style="margin:0">Per ora non hai accesso a nessuna area di questo progetto. Chiedi alla produzione di aprirtene una.</p></div></div>`; return; } }
   document.body.classList.toggle("ro", isRO());
   document.body.dataset.view = S.view;
   renderTop(); renderNav(); renderAreas();
   const v = $("#view");
-  const phone = `<div class="phone-note">Sul telefono il Film Manager è in consultazione: per modificare apri il computer.</div>`;
+  const phone = ["spoglio","strisce","calendario"].includes(S.view) ? `<div class="phone-note">Sul telefono spoglio e strisce si consultano; per riordinare le strisce e segnare il copione usa il computer.</div>` : "";
   if (S.view==="copione" && $("#cframe")) return;     // non ricaricare il Typewriter a ogni aggiornamento
   v.innerHTML = (S.view==="copione" ? "" : phone) + (VIEWFN()[S.view] || vSpoglio)();
   (AFTER[S.view] || (() => {}))();
