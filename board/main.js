@@ -188,14 +188,6 @@ document.addEventListener("submit", async e => {
 });
 $("#btnSource").onclick = () => sourceModal();
 
-/* le esportazioni vere al posto dei segnaposto del prototipo */
-document.addEventListener("click", e => {
-  const b = e.target.closest("[data-exp],[data-act='ics']"); if (!b) return;
-  const f = b.dataset.exp; const card = b.closest(".card") ? b.closest(".card").querySelector("b").textContent : "";
-  if (b.dataset.act==="ics" || f==="ICS" || f==="Apple"){ e.stopImmediatePropagation(); download(fileBase() + " - piano.ics", ics(), "text/calendar;charset=utf-8"); toast("File .ics scaricato: aprilo per aggiungere le giornate al calendario."); return; }
-  if (f==="CSV" || f==="XLSX"){ e.stopImmediatePropagation(); if (card==="Day out of Days") exportDood(); else exportTable(); toast("Tabella scaricata: si apre con Excel, Numbers o Google Sheets."); return; }
-}, true);
-
 /* ---------- avvio ---------- */
 async function afterLogin(){
   if (!Cloud.email()){ loginView(); return; }

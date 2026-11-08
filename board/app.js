@@ -35,7 +35,7 @@ const I18N = {
   "Convocazione generale":{en:"General call",de:"Drehbeginn",uk:"Загальний збір"}
 };
 let LANG = "it";
-const T = k => (LANG!=="it" && I18N[k] && I18N[k][LANG]) || k;
+const T = k => k;   // le traduzioni le fa i18n.js sullo schermo
 
 /* ---------- stato ---------- */
 const LPP = 54;                       // righe per pagina, come il Typewriter
@@ -242,7 +242,7 @@ function vSpoglio(){
       <button class="btn edit-only" data-act="rules">${T("Spoglio automatico")}</button>
       <button class="btn edit-only" data-act="ai">${T("Importa analisi AI")}</button>
       <button class="btn edit-only" data-act="cats">${T("Categorie")} (${S.cats.filter(c=>c.on).length})</button>
-      ${pend ? `<span class="note">Rev. ${esc(S.script.revision.name)}: ${pend} scene cambiate dall'ultima versione.</span>` : ""}
+      ${pend ? `<span class="note">Rev. ${esc((S.script.revision||{}).name||'—')}: ${pend} scene cambiate dall'ultima versione.</span>` : ""}
       </div>${list}</aside>
     <section class="desk" id="desk" aria-label="Copione">${scriptPages()}</section>
     <aside class="sheet" id="sheet">${sheet()}</aside></div>`;
@@ -282,13 +282,13 @@ function scriptPages(){
   return pages.map((p,i) => `<div class="page"><span class="pno">${i+1}.</span>${p.join("")}</div>`).join("");
 }
 function revDiff(s){
-  if (s.rev==="new") return `<div class="revbox"><b>Scena nuova</b> nella revisione ${esc(S.script.revision.name)}. Lo spoglio automatico l'ha già letta: controlla gli elementi.</div>`;
+  if (s.rev==="new") return `<div class="revbox"><b>Scena nuova</b> nella revisione ${esc((S.script.revision||{}).name||'—')}. Lo spoglio automatico l'ha già letta: controlla gli elementi.</div>`;
   if (s.rev!=="mod" || !s.prev) return "";
   const rows = []; const n = Math.max(s.b.length, s.prev.length);
   for (let i=0;i<n;i++){ const a = s.prev[i], b = s.b[i];
     if (!a) rows.push(`<ins>+ ${esc(b[1])}</ins>`); else if (!b) rows.push(`<del>${esc(a[1])}</del>`);
     else if (a[1]!==b[1] || a[0]!==b[0]) rows.push(`<del>${esc(a[1])}</del><br><ins>${esc(b[1])}</ins>`); }
-  return `<div class="revbox"><b>Cambiata nella revisione ${esc(S.script.revision.name)}</b> (prima: ${esc(S.script.revision.prev)}). Gli elementi già spogliati sono rimasti; controlla le righe nuove.<br><br>${rows.slice(0,4).join("<br><br>")}</div>`;
+  return `<div class="revbox"><b>Cambiata nella revisione ${esc((S.script.revision||{}).name||'—')}</b> (prima: ${esc((S.script.revision||{}).prev||'—')}). Gli elementi già spogliati sono rimasti; controlla le righe nuove.<br><br>${rows.slice(0,4).join("<br><br>")}</div>`;
 }
 function sheet(){
   const s = A.by[S.sel]; if (!s) return "";
@@ -301,7 +301,7 @@ function sheet(){
       ${c.k==="cast"||ro ? "" : `<input class="tag-add edit-only" data-add="${c.k}" placeholder="+ aggiungi" aria-label="Aggiungi a ${esc(c.l)}">`}</div></div>`;
   }).join("");
   return `<div class="sh-head"><div class="row" style="justify-content:space-between"><h2 style="font-family:var(--f-script)">Scena ${esc(s.n)}</h2>
-      <span class="row">${s.rev?`<span class="pill rev">${s.rev==="new"?"nuova":"rev. "+esc(S.script.revision.name)}</span>`:""}<span class="pill">p. ${s.page}</span></span></div>
+      <span class="row">${s.rev?`<span class="pill rev">${s.rev==="new"?"nuova":"rev. "+esc((S.script.revision||{}).name||'—')}</span>`:""}<span class="pill">p. ${s.page}</span></span></div>
     <div style="margin-top:6px;font-weight:700">${esc(s.loc)}</div>
     <div class="sh-grid"><div><small>INT/EST</small><b>${esc(s.ie)}</b></div><div><small>Luce</small><b>${s.dn==="N"?"Notte":"Giorno"}</b></div>
       <div><small>Momento</small><b>${esc(s.time)}</b></div><div><small>Ottavi</small><b class="e8">${eighths(s.e8)}</b></div></div>
@@ -375,12 +375,12 @@ function vStrisce(){
     rows += d.ids.map(strip).join("");
     const over = d.e8 > S.target*1.25;
     rows += `<div class="daybreak" draggable="true" data-break="${i}"><span class="grip edit-only" aria-hidden="true">⋮⋮</span>
-      <span>FINE ${T("Giornata").toUpperCase()} ${i+1} DI ${D.length} · ${esc(fmtDate(d.date,{weekday:"long",day:"numeric",month:"long"}))} · <span class="${over?"warn":""}">${eighths(d.e8)} pag.</span></span>
+      <span>${esc(trUI(`FINE GIORNATA ${i+1} DI ${D.length}`))} · ${esc(fmtDate(d.date,{weekday:"long",day:"numeric",month:"long"}))} · <span class="${over?"warn":""}">${eighths(d.e8)} pag.</span></span>
       ${i<D.length-1?`<button class="del edit-only" data-delbreak="${i}" aria-label="Togli questa fine giornata">×</button>`:"<span></span>"}</div>`;
   });
-  const wd = ["D","L","M","M","G","V","S"];
+  const wd = [0,1,2,3,4,5,6].map(i => new Date(2027,0,3+i,12).toLocaleDateString({it:"it-IT",en:"en-GB",de:"de-DE",uk:"uk-UA"}[LANG],{weekday:"narrow"}).toUpperCase());
   return `<div class="wrap"><div class="head"><div><h2>${T("Strisce")}</h2><p class="note">${D.length} giornate · ${eighths(A.total8)} pagine · in media ${eighths(Math.round(A.total8/D.length))} al giorno. Trascina le strisce e le fine giornata per cambiare il piano. Con «Aggiungi riga» inserisci note (spostamenti, pranzo, seconda unità) o riprese fuori copione.</p></div>
-    <div class="row edit-only"><button class="btn" data-act="addrow">+ Aggiungi riga</button><button class="btn" data-act="addbreak">${T("Aggiungi fine giornata")}</button><button class="btn primary" data-act="opt">${T("Ottimizza")}</button></div></div>
+    <div class="row"><button class="btn" data-exp="strip:pdf">PDF</button></div><div class="row edit-only"><button class="btn" data-act="addrow">+ Aggiungi riga</button><button class="btn" data-act="addbreak">${T("Aggiungi fine giornata")}</button><button class="btn primary" data-act="opt">${T("Ottimizza")}</button></div></div>
     <div class="sb-layout"><div class="board"><div class="board-scroll" id="board">${rows}</div></div>
     <div class="side">
       <div class="box"><h3>${T("Avvisi")}</h3><ul class="warnlist">${W.length ? W.map(w=>`<li>${esc(w)}</li>`).join("") : `<li class="ok">Nessun conflitto nel piano.</li>`}</ul></div>
@@ -435,8 +435,8 @@ function vCal(){
       cells += `<div class="md ${sd?"shoot":""} ${off?"off":""} ${na.length?"na":""}"><span class="dn">${d}</span>${sd?`<span class="sd">G${sd.i+1} · ${eighths(sd.e8)}</span><span class="sl">${esc([...new Set(sd.ids.filter(isScene).map(id=>A.by[id].site))].join(", "))}</span>`:""}${na.length?`<span class="sl" style="color:var(--warn)">${esc(na.join(", "))} assente</span>`:""}</div>`; }
     return `<div class="month"><h4>${esc(mm.toLocaleDateString({it:"it-IT",en:"en-GB",de:"de-DE",uk:"uk-UA"}[LANG],{month:"long",year:"numeric"}))}</h4><div class="mgrid">${cells}</div></div>`;
   }).join("");
-  return `<div class="wrap"><div class="head"><div><h2>${T("Calendario")}</h2><p class="note">Riprese dal ${esc(fmtDate(D[0].date,{day:"numeric",month:"long"}))} al ${esc(fmtDate(D[D.length-1].date,{day:"numeric",month:"long",year:"numeric"}))}. Il calendario segue le strisce: se sposti una giornata, si aggiorna da solo.</p></div>
-    <div class="row"><button class="btn" data-act="ics">Calendario Apple / Google (.ics)</button></div></div><div class="months">${html}</div></div>`;
+  return `<div class="wrap"><div class="head"><div><h2>${T("Calendario")}</h2><p class="note">Riprese dal ${esc(fmtDate(D[0].date,{day:"numeric",month:"long"}))} al ${esc(fmtDate(D[D.length-1].date,{day:"numeric",month:"long",year:"numeric"}))}. Il calendario segue le strisce. Dopo aver cambiato il piano, sincronizza di nuovo Google Calendar o riscarica il file .ics.</p></div>
+    <div class="row"><button class="btn" data-exp="cal:ics">Scarica .ics (Apple Calendar)</button><button class="btn primary" data-exp="cal:google">Sincronizza con Google Calendar</button></div></div><div class="months">${html}</div></div>`;
 }
 function ics(){
   const D = days(); const stamp = new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z";
@@ -487,26 +487,26 @@ function vReport(){
     body = `<div class="tbl"><table><thead><tr><th>Location</th><th>Set</th><th>Luce</th><th class="num">Pagine</th><th>Scene</th><th>Giornate</th><th>Permessi</th></tr></thead><tbody>${Object.values(per).sort((a,b)=>b.e8-a.e8).map(p=>{ const perm = A.scenes.filter(s=>s.site===p.site).flatMap(s=>(tagsOf(s.id).perm||[]).map(x=>x.t));
       return `<tr><td><b>${esc(p.site)}</b></td><td>${esc([...p.sets].join(" · "))}</td><td>${[...p.dn].join(", ")}</td><td class="num">${eighths(p.e8)}</td><td>${p.sc.join(", ")}</td><td>${[...p.d].sort((a,b)=>a-b).join(", ")}</td><td>${esc(perm.join("; "))||"—"}</td></tr>`; }).join("")}</tbody></table></div>`;
   } else if (S.rtab==="rev"){
-    const rv = S.script.revision;
+    const rv = S.script.revision || {name:"—", color:"#ffffff", date:new Date().toISOString().slice(0,10), prev:"—"};
     body = `<div class="box" style="max-width:760px"><div class="row"><span class="rev-dot" style="background:${esc(rv.color)}"></span><b>Revisione ${esc(rv.name)}</b><span class="muted">${esc(fmtDate(rv.date,{day:"numeric",month:"long",year:"numeric"}))} · rispetto alla ${esc(rv.prev)}</span></div>
       <p class="note">Il Typewriter tiene un identificativo fisso per ogni scena e un'impronta del testo. Quando il copione cambia, Abisso Board confronta le impronte: le scene uguali tengono lo spoglio, quelle cambiate vengono segnalate, quelle nuove prendono un numero A/B senza rinumerare le altre.</p>
       <div class="tbl"><table><thead><tr><th>Scena</th><th>Stato</th><th>Location</th><th>Giornata</th></tr></thead><tbody>${A.scenes.filter(s=>s.rev).map(s=>{ const d = dayOf(s.id); return `<tr><td><b>${esc(s.n)}</b></td><td><span class="pill rev">${s.rev==="new"?"nuova":"modificata"}</span></td><td>${esc(s.loc)}</td><td>${d?d.i+1:"—"}</td></tr>`; }).join("")}</tbody></table></div>
       <p class="note">Colori di revisione nell'ordine standard: bianca, blu, rosa, gialla, verde, oro, poi doppie.</p></div>`;
   } else {
     const ex = [
-      ["Fogli di spoglio","Una pagina per scena con tutte le categorie, come Movie Magic.",["PDF"]],
-      ["Stripboard","Il piano a strisce colorate, stampabile in orizzontale.",["PDF"]],
-      ["Piano di lavorazione","Giornata per giornata con scene, cast ed elementi.",["PDF","XLSX","Google Sheets"]],
-      ["Calendario","Una data per giornata. Il link si aggiorna da solo quando cambi il piano.",["ICS","Apple","Google"]],
-      ["Day out of Days","Lavoro e attese di ogni attore, per i contratti.",["PDF","XLSX"]],
-      ["Report per reparto","Un elenco per ogni categoria, con scene e giornate.",["PDF","CSV"]],
-      ["Cast e personaggi","Scene, battute e pagine per personaggio.",["PDF","CSV"]],
-      ["Location","Set, luce, pagine e permessi per location.",["PDF","CSV"]],
-      ["Revisioni","Scene nuove e modificate, con la giornata in cui cadono.",["PDF"]],
-      ["Ordine del giorno","Il foglio della giornata, da mandare via email al cast e alla troupe.",["PDF","Email"]],
-      ["Piano trasporti","Le corse della giornata pronte per Set Transport.",["Set Transport"]],
-      ["Tabella completa","Tutto lo spoglio in una tabella, per altri programmi.",["CSV","XLSX"]]];
-    body = `<div class="cards">${ex.map(([t,d,f])=>`<div class="card"><b>${esc(t)}</b><p>${esc(d)}</p><div class="fmt">${f.map(x=>`<button class="btn" data-exp="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>`).join("")}</div>`;
+      ["Fogli di spoglio","Una pagina per scena con tutte le categorie, come Movie Magic.",[["breakdown:pdf","PDF"]]],
+      ["Stripboard","Il piano a strisce colorate, in orizzontale.",[["strip:pdf","PDF"]]],
+      ["Piano di lavorazione","Giornata per giornata con scene, cast ed elementi.",[["plan:pdf","PDF"],["plan:csv","CSV"]]],
+      ["Calendario","Una data per giornata, per Apple Calendar o Google Calendar.",[["cal:ics",".ics"],["cal:google","Google Calendar"]]],
+      ["Day out of Days","Lavoro e attese di ogni attore, per i contratti.",[["dood:pdf","PDF"],["dood:csv","CSV"]]],
+      ["Report per reparto","Un elenco per ogni categoria, con scene e giornate.",[["dept:pdf","PDF"],["dept:csv","CSV"]]],
+      ["Cast e personaggi","Scene, battute e pagine per personaggio.",[["cast:pdf","PDF"],["cast:csv","CSV"]]],
+      ["Location","Set, luce, pagine e permessi per location.",[["loc:pdf","PDF"],["loc:csv","CSV"]]],
+      ["Revisioni","Scene nuove e modificate, con la giornata in cui cadono.",[["rev:pdf","PDF"]]],
+      ["Ordine del giorno","Il foglio della giornata scelta nella sezione Ordine del giorno.",[["call:pdf","PDF"]]],
+      ["Piano trasporti","Le corse della giornata pronte per Set Transport.",[["st:js","Set Transport"]]],
+      ["Tabella completa","Tutto lo spoglio in una tabella, per altri programmi.",[["full:csv","CSV"]]]];
+    body = `<p class="note" style="margin:0 0 12px">I PDF si aprono in una finestra di stampa: scegli «Salva come PDF». I CSV si aprono con Excel, Numbers o Google Sheets.</p><div class="cards">${ex.map(([t,d,f])=>`<div class="card"><b>${esc(t)}</b><p>${esc(d)}</p><div class="fmt">${f.map(([k,l])=>`<button class="btn" data-exp="${k}">${esc(l)}</button>`).join("")}</div></div>`).join("")}</div>`;
   }
   return `<div class="wrap"><div class="head"><h2>${T("Report")}</h2><div class="row">${tabs.map(([k,l])=>`<button class="btn ${S.rtab===k?"primary":""}" data-rtab="${k}">${esc(T(l))}</button>`).join("")}</div></div>${body}</div>`;
 }
@@ -536,10 +536,10 @@ function vOdg(){
   const unav = c.sc.flatMap(s => conflicts(s.id, d.date));
   return `<div class="wrap"><div class="head"><div><h2>${T("Ordine del giorno")}</h2><p class="note">Generato dal piano e dallo spoglio. Gli orari di trucco e pickup partono dalla convocazione e dall'ordine delle scene: li correggi a mano, e le corse si aggiornano.</p></div>
     <div class="row"><select class="sm" id="csDay" aria-label="Giornata">${D.map((x,i)=>`<option value="${i}" ${i===di?"selected":""}>${T("Giornata")} ${i+1} · ${esc(fmtDate(x.date))}</option>`).join("")}</select>
-    <button class="btn primary" data-act="toST">Manda le corse a Set Transport</button></div></div>
+    <button class="btn" data-exp="call:pdf">PDF</button><button class="btn primary" data-act="toST">Manda le corse a Set Transport</button></div></div>
   <div class="cs">
     <div class="cs-top"><div><div class="muted" style="font-size:12px">ABISSO STUDIO S.R.L. presenta</div><div class="big">${esc(S.script.title.toUpperCase())}</div>
-      <div class="kv" style="margin-top:8px"><span>Giornata</span><b>${d.i+1} di ${D.length}</b><span>Data</span><b>${esc(fmtDate(d.date,{weekday:"long",day:"numeric",month:"long",year:"numeric"}))}</b><span>Revisione copione</span><b>${esc(S.script.revision.name)}</b></div></div>
+      <div class="kv" style="margin-top:8px"><span>Giornata</span><b>${d.i+1} / ${D.length}</b><span>Data</span><b>${esc(fmtDate(d.date,{weekday:"long",day:"numeric",month:"long",year:"numeric"}))}</b><span>Revisione copione</span><b>${esc((S.script.revision||{}).name||'—')}</b></div></div>
       <div><div class="muted" style="font-size:12px">${T("Convocazione generale")}</div><input type="time" id="csCall" value="${S.call}" aria-label="${T("Convocazione generale")}" class="edit-only"><div class="call" style="display:none">${S.call}</div>
         <div class="kv" style="margin-top:8px"><span>Alba / tramonto</span><b>06:41 / 18:07 <small class="muted">(esempio)</small></b><span>Meteo</span><b class="muted">dalla location, 3 giorni prima</b></div></div>
       <div><div class="kv"><span>Location</span><b>${esc(c.sites.join(" → "))}</b><span>Camp base</span><b>${esc(TRANSPORT_DEFAULT.camp)}</b><span>Ospedale</span><b class="muted">dalla scheda location</b><span>Pagine</span><b>${eighths(d.e8)}</b></div></div></div>
