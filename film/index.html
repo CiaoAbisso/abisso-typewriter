@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ff0000">
+<meta name="theme-color" content="#100728">
 <title>Abisso Film Manager</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ff0000'/%3E%3Crect x='7' y='9' width='18' height='3' fill='%23fff'/%3E%3Crect x='7' y='15' width='18' height='3' fill='%23fff'/%3E%3Crect x='7' y='21' width='12' height='3' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
 <style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <style>
 /* Layout: banco di produzione — barra in alto con il rosso Abisso, a sinistra l'indice delle scene, al centro la pagina del copione in Courier, a destra la scheda di spoglio. Le altre viste sono tavole a tutta larghezza. Stessi token del Typewriter. */
@@ -353,14 +353,20 @@ input.tmin.est::placeholder{color:#777;font-style:italic}
 @media (max-width:1100px){ .cal-layout{grid-template-columns:1fr} .clgrid{grid-template-columns:1fr} .lcols,.lcols.two,.lgrid{grid-template-columns:1fr} }
 @media (max-width:760px){ .strip{min-width:0;grid-template-columns:34px 52px minmax(0,1fr) 40px;font-size:12px} .strip .ids,.strip .who{display:none} .strip.banner{grid-template-columns:1fr auto} .daybreak{min-width:0;grid-template-columns:1fr} .areas button{min-width:56px;padding:6px 6px} .cday{min-height:80px} .cchip{font-size:10px} .clrow{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr)} .clph{display:none} }
 </style>
-<link rel="stylesheet" href="punk.css">
+<link rel="stylesheet" href="dock.css">
 </head>
 <body>
 <div class="app">
   <header class="top">
     <button class="btn ghost in-project" id="btnBack" aria-label="Tutti i progetti" hidden>←</button>
-    <div class="brand"><b>ABISSO</b><span>Film Manager</span><i aria-hidden="true"></i></div>
+    <div class="brand"><img src="assets/logo-abisso-dock.png" alt="Abisso Studio" width="118" height="25"><span>Film Manager</span></div>
     <div class="proj"><b id="pTitle"></b><small id="pSub"></small></div>
+    <nav class="apps" aria-label="Strumenti Abisso">
+      <a href="https://claude.ai/artifact/V4RiXv99GNqRKehpf83K7x" target="_blank" rel="noopener" title="Abisso Dock: amministrazione, progetti, bandi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg>Dock</a>
+      <span aria-current="page">Film Manager</span>
+      <a class="hide-m" href="../" target="_blank" rel="noopener">Typewriter</a>
+      <a class="hide-m" href="https://set-transport.ciao-abissostudio.workers.dev" target="_blank" rel="noopener">Set Transport</a>
+    </nav>
     <div class="tools">
       <span class="sync in-project" id="sync" hidden></span>
       <button class="btn edit-only in-project" id="btnSource" data-i="Copione" hidden></button>

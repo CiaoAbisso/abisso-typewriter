@@ -101,6 +101,10 @@ function vProdInfo(){
       <label class="fld">Riprese<input value="${f.n ? `${esc(fmtDate(f.from,{day:"numeric",month:"short",year:"numeric"}))} – ${esc(fmtDate(f.to,{day:"numeric",month:"short",year:"numeric"}))} · ${f.n} giornate` : "—"}" disabled title="Dal piano di lavorazione"></label>
       <label class="fld">Location<input value="${esc(f.sites.join(", "))}" disabled title="Dallo spoglio"></label>
     </div></section>
+    <section class="box"><h3>Collegamento con Abisso Dock</h3>
+      <p class="note" style="margin:0">Dock e Film Manager restano strumenti separati. Da qui il progetto manda al Dock una scheda aggiornata (dati del film, date di riprese, troupe con ruoli, costo, piano finanziario e coproduzioni) come file nella cartella «Abisso Film Manager» del tuo Google Drive, che il Dock legge già. Niente codici fiscali, IBAN o compensi personali.</p>
+      <div class="fgrid">${fld("dockName","Nome del progetto nel Dock",{def:S.script.title})}<label class="fld">Ultimo invio<input value="${pr.dock && pr.dock.at ? esc(new Date(pr.dock.at).toLocaleString("it-IT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})) : "mai"}" disabled></label></div>
+      <div class="row"><button class="btn primary" data-dockx="1">Aggiorna nel Dock</button>${pr.dock && pr.dock.file ? `<a class="btn" href="https://drive.google.com/file/d/${esc(pr.dock.file)}/view" target="_blank" rel="noopener">Apri il file</a>` : ""}<a class="btn" href="https://claude.ai/artifact/V4RiXv99GNqRKehpf83K7x" target="_blank" rel="noopener">Apri il Dock</a></div></section>
     <section class="box"><h3>Contatti</h3><div class="fgrid">${fld("cName","Referente")}${fld("cEmail","Email",{type:"email"})}${fld("cPhone","Telefono",{type:"tel"})}${fld("cWeb","Sito",{def:"abissostudio.it"})}</div></section>
   </div></div>`;
 }
@@ -112,7 +116,7 @@ function vProdPeople(){
   const list = teamList(); photosLoad(list.filter(x => x.pid).map(x => x.pid));
   const card = x => `<article class="person ${x.on?"":"off"}"><div class="ph" style="${bgi(x.photo)}" data-prph="${esc(x.key)}" role="button" tabindex="0" aria-label="Foto di ${esc(x.name)}">${x.photo?"":esc(initials(x.name))}</div>
       <div class="pb"><small>${esc(x.cast ? "Interpreta " + (x.role||"—") : (x.role||"—"))}</small><b>${esc(x.name||"Senza nome")}</b><p>${esc(x.bio || "Nessuna biografia.")}</p></div>
-      <div class="pbar"><button data-prbio="${esc(x.key)}">Biografia</button><button data-prin="${esc(x.key)}">${x.on ? "Nel dossier ✓" : "Fuori dal dossier"}</button></div></article>`;
+      <div class="pbar"><button data-prbio="${esc(x.key)}">Biografia</button><button data-prin="${esc(x.key)}">${x.on ? "Nel dossier" : "Escluso"}</button></div></article>`;
   const team = list.filter(x => !x.cast), cast = list.filter(x => x.cast);
   return `<div class="wrap wide"><div class="head"><div><h2>Persone</h2><p class="note">La troupe arriva dalla Crewlist, il cast dal reparto Cast della troupe. Foto e biografie restano nell'archivio di Abisso: al prossimo film le ritrovi. Per chi non è in troupe (coproduttori, consulenti, attori ancora da contrattualizzare) usa «+ Persona».</p></div>
     <div class="row"><button class="btn" data-pradd="person">+ Persona</button><button class="btn" data-pradd="castp">+ Interprete</button><button class="btn primary" data-crewadd="1">+ In troupe</button></div></div>
@@ -221,12 +225,12 @@ function vDossier(){
 }
 SORT.ds = keys => { dsTpl().order = keys; save(); render(); };
 function slideCss(){
-  let css = ""; for (const sh of document.styleSheets){ if (!sh.href || !/punk\.css/.test(sh.href)) continue; try{ css = [...sh.cssRules].filter(r => /\.slide|\.deck/.test(r.selectorText||"")).map(r => r.cssText).join("\n"); }catch(e){} }
+  let css = ""; for (const sh of document.styleSheets){ if (!sh.href || !/dock\.css/.test(sh.href)) continue; try{ css = [...sh.cssRules].filter(r => /\.slide|\.deck/.test(r.selectorText||"")).map(r => r.cssText).join("\n"); }catch(e){} }
   return css;
 }
 function dossierPdf(){
   printDoc(fileBase() + " - Dossier", `<style>:root{--ink:#000;--paper:#fff;--panel:#fff;--panel-2:#f1f1f3;--muted:#5d5d63;--red:#ff0000;--red-ink:#d90000;--bw:1.5px;--f-mono:"Courier Prime",monospace;--line:#ddd}
-    body{font-family:Archivo,Helvetica,Arial,sans-serif;font-size:10px}
+    body{font-family:"Instrument Sans",Helvetica,Arial,sans-serif;font-size:10px}
     ${slideCss()}
     @page{size:A4 landscape;margin:0}
     .deck{display:block}
@@ -291,3 +295,41 @@ vPerson = function(){
     <div class="pbar"><button data-prbio="e:${id}">Biografia e filmografia</button></div></div></section>`;
   return html.replace(/<\/div>\s*$/, extra + "</div>");
 };
+
+/* ---------- ponte verso Abisso Dock: un file JSON per progetto nel Drive dello studio ----------
+   Il Dock vive su claude.ai e legge Google Drive; il Film Manager scrive solo i file che crea (permesso drive.file). */
+function dockPayload(){
+  const pr = PRODX(); const f = shootFacts(); const D = days();
+  const crew = (typeof CR!=="undefined" && CR.ready) ? Object.values(CR.eng).map(e => { const p = CR.people[e.person] || e.c || {};
+    return {nome: p.name || (e.c||{}).name || "", reparto: deptOf(e.dept).l, ruolo: e.role || "", email: p.email || (e.c||{}).email || "", telefono: p.phone || (e.c||{}).phone || "",
+      periodi: PHASES.filter(([k]) => inPhase(e,k)).map(([k,l]) => { const [a,b] = phaseRange(e,k); return {fase:l, dal:a, al:b, giorni:phaseDays(e,k)}; })}; }) : [];
+  const num = v => toNum(v) || null;
+  return {schema:"abisso-film-manager/1", aggiornato: new Date().toISOString(), progettoDock: pr.dockName || S.script.title, filmManager: {id: Cloud.pid, link: location.origin + location.pathname},
+    titolo: S.script.title, titoloInternazionale: pr.titleInt||"", formato: pr.format||"", genere: pr.genre||"", durata: pr.duration||"", lingua: pr.language||"", paese: pr.country||"Italia", anno: pr.year||"", stato: pr.status||"",
+    casaDiProduzione: pr.cdp || "Abisso Studio S.r.l.", produttori: pr.producers||"", costoDiProduzione: num(pr.cost), logline: pr.logline||"", sinossiBreve: pr.synShort||"",
+    riprese: {dal: f.from, al: f.to, giornate: f.n, location: f.sites, calendario: D.filter(d => d.ids.length).map(d => ({giornata: d.i+1, data: d.date, scene: d.ids.filter(isScene).map(id => A.by[id].n)}))},
+    coproduzioni: (pr.copro||[]).map(c => ({societa:c.name, paese:c.country, ruolo:c.role, quota: num(c.share)})),
+    pianoFinanziario: (pr.fin||[]).map(r => ({fonte:r.src, importo: num(r.amount), stato:r.status})),
+    troupe: crew, cast: crew.filter(x => x.reparto==="Cast").map(x => ({interprete:x.nome, personaggio:x.ruolo})),
+    personaggi: (A && A.castIds) || []};
+}
+async function dockExport(btn){
+  if (!Cloud.isAdmin()){ toast("Il collegamento con il Dock lo fanno gli amministratori."); return; }
+  const pr = PRODX(); pr.dock = pr.dock || {};
+  btn.disabled = true; btn.textContent = "Invio…";
+  try{
+    crewLoad(); await googleTokenFor(DRIVE_SCOPE);
+    const D = "https://www.googleapis.com/drive/v3/files";
+    if (pr.dock.folder){ try{ const f = await gfetch(`${D}/${pr.dock.folder}?fields=id,trashed`); if (f.trashed) pr.dock.folder = null; }catch(e){ pr.dock.folder = null; } }
+    if (!pr.dock.folder){ const f = await gfetch(D, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({name:"Abisso Film Manager", mimeType:"application/vnd.google-apps.folder"})}); pr.dock.folder = f.id; }
+    const name = `Abisso Film Manager · ${S.script.title}.json`; const body = JSON.stringify(dockPayload(), null, 2);
+    const bd = "abisso" + Date.now(); const multi = (meta) => `--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bd}--`;
+    const U = "https://www.googleapis.com/upload/drive/v3/files";
+    let ok = false;
+    if (pr.dock.file){ try{ await gfetch(`${U}/${pr.dock.file}?uploadType=multipart`, {method:"PATCH", headers:{"Content-Type":`multipart/related; boundary=${bd}`}, body: multi({name})}); ok = true; }catch(e){ if (e.status!==404) throw e; } }
+    if (!ok){ const f = await gfetch(`${U}?uploadType=multipart&fields=id`, {method:"POST", headers:{"Content-Type":`multipart/related; boundary=${bd}`}, body: multi({name, parents:[pr.dock.folder], description:"Scheda progetto per Abisso Dock, scritta da Abisso Film Manager"})}); pr.dock.file = f.id; }
+    pr.dock.at = Date.now(); save(); render(); toast("Scheda aggiornata nel Drive: il Dock la trova nella cartella «Abisso Film Manager».", 4500);
+  }catch(e){ gErr(e); }
+  finally{ btn.disabled = false; btn.textContent = "Aggiorna nel Dock"; }
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-dockx]"); if (b && S) dockExport(b); });

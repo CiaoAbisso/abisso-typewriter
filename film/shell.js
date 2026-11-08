@@ -1,14 +1,14 @@
 /* ================= Abisso Film Manager · aree di lavoro (come le pagine di DaVinci) ================= */
 /* icone disegnate per l'ambiente: tratto 1.6, un dettaglio pieno che diventa rosso nell'area attiva */
 const ICO = {
-  copione:`<path d="M6 2.5h8.5L19 7v14.5H6z"/><path d="M14.5 2.5V7H19"/><path d="M8.8 11h7.4M8.8 14h7.4M8.8 17h4"/><rect class="fill acc" x="13.6" y="16" width="2.2" height="2.6"/>`,
-  spoglio:`<path d="M3.5 6h9M3.5 10h6M3.5 14h8M3.5 18h5"/><path d="M14.2 16.6 19.6 4.4l2.4 1.1-5.4 12.2-3 1.9z"/><path class="acc" d="M12.6 21h8.6"/>`,
-  piano:`<rect x="3" y="3.5" width="18" height="3.4"/><rect class="fill acc" x="3" y="8.6" width="18" height="3.4"/><rect x="3" y="13.7" width="18" height="3.4"/><path d="M3 20.5h11"/>`,
-  troupe:`<circle cx="8.5" cy="8" r="3.3"/><path d="M2.5 20.5c.4-4 2.9-6.2 6-6.2s5.6 2.2 6 6.2"/><circle class="acc" cx="16.6" cy="7.2" r="2.6"/><path class="acc" d="M16.4 12.4c3 0 4.8 2 5.1 5.4"/>`,
-  budget:`<circle cx="12" cy="12" r="9"/><path class="acc" d="M15.6 8.2a4.6 4.6 0 1 0 0 7.6"/><path class="acc" d="M7.2 10.8h6.2M7.2 13.4h6.2"/>`,
-  set:`<path d="M3.5 10h17v10.5h-17z"/><path d="M3.5 10 4 5.6l16.2-2 .5 4.1z"/><path class="acc" d="m8.4 5 2.4 3.6M13.6 4.4 16 8"/><path d="M7 14h6"/>`,
-  produzione:`<rect x="2.8" y="5" width="18.4" height="14" /><circle cx="8.3" cy="11" r="2.3"/><path d="M5 16.5c.5-1.8 1.7-2.8 3.3-2.8s2.8 1 3.3 2.8"/><path class="acc" d="M14 9.5h4.6M14 12.5h4.6M14 15.5h3"/>`,
-  dossier:`<path d="M5.5 6.5h13v14h-13z"/><path d="M8 3.5h13v14"/><path class="acc" d="m10.3 10.4 4.2 3.1-4.2 3.1z"/>`
+  copione:`<path d="M6 3h8.5L19 7.5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5"/><path class="acc" d="M8.5 12.5h7M8.5 16h4.5"/>`,
+  spoglio:`<path d="M4 6h8M4 10.5h5M4 15h7M4 19.5h5"/><path class="acc" d="m14.5 17.5 5.3-11a1.6 1.6 0 0 1 2.9 1.4l-5.3 11-3.4 1.6z"/>`,
+  piano:`<rect x="3" y="3.5" width="18" height="4" rx="1.4"/><rect class="acc" x="3" y="10" width="18" height="4" rx="1.4"/><rect x="3" y="16.5" width="11" height="4" rx="1.4"/>`,
+  troupe:`<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><circle class="acc" cx="17" cy="8.5" r="2.4"/><path class="acc" d="M16.5 13.5c2.4.2 4 1.8 4.5 4.5"/>`,
+  budget:`<circle cx="12" cy="12" r="9"/><path class="acc" d="M15.5 8.5a4 4 0 1 0 0 7M7 11h6M7 13.5h6"/>`,
+  set:`<rect x="3" y="9.5" width="18" height="11" rx="1.6"/><path d="m3.6 9.4-.5-3.2a1 1 0 0 1 .8-1.1l15-2.4a1 1 0 0 1 1.2.8l.4 2.9"/><path class="acc" d="m8 4.8 2.4 3.9M13.2 4l2.4 3.9"/>`,
+  produzione:`<rect x="3" y="4.5" width="18" height="15" rx="2"/><circle cx="8.6" cy="10.5" r="2.3"/><path d="M5.3 16.5c.5-1.8 1.7-2.8 3.3-2.8s2.8 1 3.3 2.8"/><path class="acc" d="M14.5 9.5h4M14.5 12.5h4M14.5 15.5h2.5"/>`,
+  dossier:`<rect x="4" y="6" width="14" height="15" rx="1.8"/><path d="M8 3h10.2A1.8 1.8 0 0 1 20 4.8V17"/><path class="acc" d="m9.5 10.5 4.5 3-4.5 3z"/>`
 };
 const AREAS = [
   {k:"copione", l:"Copione", views:[["copione","Copione"]]},
