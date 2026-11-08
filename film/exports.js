@@ -61,7 +61,7 @@ function printDoc(title, html){
   if (!w){ toast(L("Il browser ha bloccato la finestra di stampa: consenti i popup per questo sito e riprova."), 4500); return; }
   w.document.open();
   w.document.write(`<!doctype html><html lang="${LANG}"><head><meta charset="utf-8"><title>${esc(title)}</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap"><style>${PRINT_CSS}</style></head><body>${html}
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Courier+Prime:wght@400;700&display=swap"><style>${PRINT_CSS}</style></head><body>${html}
     <script>window.onload=function(){setTimeout(function(){window.focus();window.print();},350)};<\/script></body></html>`);
   w.document.close();
 }

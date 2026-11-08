@@ -68,6 +68,10 @@
         "$pid": {
           ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && data.child('members').child(auth.token.email.toLowerCase().replace('.', ',')).exists())",
           ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+          "media": {
+            ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod')",
+            "$k": { ".validate": "newData.isString() && newData.val().length < 3000000" }
+          },
           "data": {
             ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && (data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'ad'))"
           }
@@ -78,6 +82,11 @@
       "people": {
         ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
         ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
+      },
+      "photos": {
+        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        "$id": { ".validate": "newData.isString() && newData.val().length < 1000000" }
       },
       "crew": {
         "$pid": {

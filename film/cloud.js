@@ -129,12 +129,13 @@ const Cloud = {
 
 /* dati del progetto ⇄ nodi piatti in Firebase (stringhe JSON, così il confronto è semplice) */
 function flatData(d){
-  const f = {}; ["cats","order","extra","set","unavail","times"].forEach(k => { if (d[k]!=null) f[k] = d[k]; });
+  const f = {}; ["cats","order","extra","set","unavail","times","cs","csd","prod"].forEach(k => { if (d[k]!=null) f[k] = d[k]; });
   Object.entries(d.tags||{}).forEach(([id,v]) => f["tags/"+id] = v); return f;
 }
 function flatFromState(S){
   const f = {cats: JSON.stringify(S.cats), order: JSON.stringify(S.order), extra: JSON.stringify(S.extra||{}),
-    set: JSON.stringify({start:S.start, target:S.target, off:S.off, call:S.call, sys:S.sys||"it9", sysc:S.sysc||null}), unavail: JSON.stringify(S.unavail||{}), times: JSON.stringify(S.times||{})};
+    set: JSON.stringify({start:S.start, target:S.target, off:S.off, call:S.call, sys:S.sys||"it9", sysc:S.sysc||null}), unavail: JSON.stringify(S.unavail||{}), times: JSON.stringify(S.times||{}),
+    cs: JSON.stringify(S.cs||{}), csd: JSON.stringify(S.csd||{}), prod: JSON.stringify(S.prod||{})};
   Object.entries(S.tags||{}).forEach(([id,v]) => { const s = JSON.stringify(v); if (s!=="{}" || Cloud.last["tags/"+id]) f["tags/"+id] = s; });
   return f;
 }
@@ -142,7 +143,7 @@ function dataInto(st, d){
   const J = (v, def) => { try{ return v==null ? def : JSON.parse(v); }catch(e){ return def; } };
   const set = J(d.set, {});
   st.cats = J(d.cats, clone(DEFAULT_CATS)); st.order = J(d.order, []); st.extra = J(d.extra, {}); st.unavail = J(d.unavail, {});
-  st.times = J(d.times, {}); st.sys = set.sys || "it9"; st.sysc = set.sysc || null;
+  st.times = J(d.times, {}); st.cs = J(d.cs, {}); st.csd = J(d.csd, {}); st.prod = J(d.prod, {}); st.sys = set.sys || "it9"; st.sysc = set.sysc || null;
   st.start = set.start || nextMonday(); st.target = set.target || 16; st.off = set.off || [0,6]; st.call = set.call || "07:00";
   st.tags = {}; Object.entries(d.tags||{}).forEach(([id,v]) => st.tags[id] = J(v, {}));
   return st;

@@ -88,7 +88,7 @@ async function budgetCreate(){
     const pv = await gfetch(SHEETS + f.id + "/values/" + encodeURIComponent("PREVENTIVO!A1:C1000"));
     const rows = pv.values || []; const norm = s => String(s||"").trim().toLowerCase();
     const rowOf = name => rows.findIndex(r => norm(r[1])===norm(name));
-    const roles = [...new Set(crewRows().map(r => r.role).filter(Boolean))]; const upd = []; const unmatched = [];
+    const roles = [...new Set(crewRows().filter(r => r.dept!=="Cast").map(r => r.role).filter(Boolean))]; const upd = []; const unmatched = [];
     const F = (role, phase, share) => `=SUMIFS(DATI_TROUPE!N:N${sep}DATI_TROUPE!B:B${sep}"${role.replace(/"/g,'""')}"${phase?`${sep}DATI_TROUPE!F:F${sep}"${phase}"`:""})${share!=null?`*${String(share).replace(".", sep===";"?",":".")}`:""}`;
     roles.forEach(role => {
       const split = SPLIT_ROLES[norm(role)];

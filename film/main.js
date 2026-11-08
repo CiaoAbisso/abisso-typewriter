@@ -43,7 +43,7 @@ async function openProject(pid){
 }
 function onRemote(kind, val){
   if (!S) return;
-  if (kind==="data"){ const keep = {script:S.script, view:S.view, sel:S.sel, rtab:S.rtab, csDay:S.csDay}; S = dataInto(keep, val); analyse(); }
+  if (kind==="data"){ const keep = {script:S.script, view:S.view, sel:S.sel, rtab:S.rtab, csDay:S.csDay, calDay:S.calDay, crewSel:S.crewSel, lastIn:S.lastIn}; S = dataInto(keep, val); analyse(); }
   else if (kind==="script"){ S.script = val; analyse(); const known = new Set(S.order); [...A.scenes, ...A.extras].forEach(s => { if (!known.has(s.id)) S.order.push(s.id); }); }
   const a = document.activeElement; if (a && a.closest && a.closest("#view, .modal") && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return;   // non disturbare chi sta scrivendo
   if (selMenu) return;

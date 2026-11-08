@@ -7,7 +7,7 @@
 <title>Abisso Film Manager</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ff0000'/%3E%3Crect x='7' y='9' width='18' height='3' fill='%23fff'/%3E%3Crect x='7' y='15' width='18' height='3' fill='%23fff'/%3E%3Crect x='7' y='21' width='12' height='3' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap">
 <style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <style>
 /* Layout: banco di produzione — barra in alto con il rosso Abisso, a sinistra l'indice delle scene, al centro la pagina del copione in Courier, a destra la scheda di spoglio. Le altre viste sono tavole a tutta larghezza. Stessi token del Typewriter. */
@@ -353,6 +353,7 @@ input.tmin.est::placeholder{color:#777;font-style:italic}
 @media (max-width:1100px){ .cal-layout{grid-template-columns:1fr} .clgrid{grid-template-columns:1fr} .lcols,.lcols.two,.lgrid{grid-template-columns:1fr} }
 @media (max-width:760px){ .strip{min-width:0;grid-template-columns:34px 52px minmax(0,1fr) 40px;font-size:12px} .strip .ids,.strip .who{display:none} .strip.banner{grid-template-columns:1fr auto} .daybreak{min-width:0;grid-template-columns:1fr} .areas button{min-width:56px;padding:6px 6px} .cday{min-height:80px} .cchip{font-size:10px} .clrow{grid-template-columns:24px minmax(0,1fr) minmax(0,1fr)} .clph{display:none} }
 </style>
+<link rel="stylesheet" href="punk.css">
 </head>
 <body>
 <div class="app">
@@ -393,5 +394,7 @@ input.tmin.est::placeholder{color:#777;font-style:italic}
 <script src="i18n.js"></script>
 <script src="main.js"></script>
 <script src="shell.js"></script>
+<script src="callsheet.js"></script>
+<script src="pitch.js"></script>
 </body>
 </html>
