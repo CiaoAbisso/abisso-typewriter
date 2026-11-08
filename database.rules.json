@@ -73,6 +73,18 @@
           }
         }
       }
+    },
+    "f": {
+      "people": {
+        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
+      },
+      "crew": {
+        "$pid": {
+          ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && root.child('b/p/' + $pid + '/members/' + auth.token.email.toLowerCase().replace('.', ',') + '/role').val() === 'prod')",
+          ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && root.child('b/p/' + $pid + '/members/' + auth.token.email.toLowerCase().replace('.', ',') + '/role').val() === 'prod')"
+        }
+      }
     }
   }
 }
