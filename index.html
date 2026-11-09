@@ -399,6 +399,8 @@ html.focusmode #ed:not(:focus) .el{opacity:1}
 .rv-it b{font-weight:700}
 .rv-it span{color:var(--muted);font-size:12px;flex:1;min-width:120px}
 .rv-it .rchip{flex:none;min-width:0}
+.side-stats{display:none}
+@media (max-width:760px){.side{display:flex;flex-direction:column}.side-list{flex:1;min-height:0;overflow:auto}.side-stats{display:block;flex:none;border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));font-size:11px;line-height:1.6;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-variant-numeric:tabular-nums}}
 @media (max-width:760px){.seg [data-view=ol]{display:none}}
 @media (min-width:761px){.menu .only-m{display:none!important}}
 .pdf-opts{display:flex;flex-direction:column;gap:2px;margin:0 0 12px}
@@ -476,6 +478,7 @@ html.focusmode #ed:not(:focus) .el{opacity:1}
     <aside class="side" id="side">
       <div class="side-tabs"><button data-st="scenes" class="on" data-i18n="Scene">Scene</button><button data-st="chars" data-i18n="Personaggi">Personaggi</button><button data-st="notes" data-i18n="Note">Note</button></div>
       <div class="side-list" id="sideList"></div>
+      <div class="side-stats" id="sideStats"></div>
     </aside>
     <section class="write" id="write">
       <div class="findbar" id="findbar" hidden role="search">
@@ -1149,6 +1152,7 @@ function renderStats(model){
   $("#stPages").textContent = T(pages===1?"{n} pagina":"{n} pagine",{n:pages});
   $("#stScenes").textContent = T(nsc===1?"{n} scena":"{n} scene",{n:nsc});
   const chars = model.reduce((n,[,x]) => n + String(x).length, 0), charsNS = model.reduce((n,[,x]) => n + String(x).replace(/\s/g,"").length, 0);
+  $("#sideStats").textContent = [T(pages===1?"{n} pagina":"{n} pagine",{n:pages}), T(nsc===1?"{n} scena":"{n} scene",{n:nsc}), T("{n} parole",{n:words.toLocaleString(LOCALE())}), T("{a} caratteri ({b} senza spazi)",{a:model.reduce((n,[,x]) => n + String(x).length, 0).toLocaleString(LOCALE()), b:model.reduce((n,[,x]) => n + String(x).replace(/\s/g,"").length, 0).toLocaleString(LOCALE())})].join(" · ");
   $("#stWords").textContent = T("{n} parole",{n:words.toLocaleString(LOCALE())}) + " · " + T("{a} caratteri ({b} senza spazi)",{a:chars.toLocaleString(LOCALE()), b:charsNS.toLocaleString(LOCALE())}) + goalText(words);
 }
 function renderMarks(){
