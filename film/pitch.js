@@ -102,7 +102,7 @@ function vProdInfo(){
       <label class="fld">Location<input value="${esc(f.sites.join(", "))}" disabled title="Dallo spoglio"></label>
     </div></section>
     <section class="box"><h3>Collegamento con Abisso Dock</h3>
-      <p class="note" style="margin:0">Dock e Film Manager restano strumenti separati. Da qui il progetto manda al Dock una scheda aggiornata (dati del film, date di riprese, troupe con ruoli, costo, piano finanziario e coproduzioni) come file nella cartella «Abisso Film Manager» del tuo Google Drive, che il Dock legge già. Niente codici fiscali, IBAN o compensi personali.</p>
+      <p class="note" style="margin:0">Dock e Film Manager restano strumenti separati. Da qui il progetto manda al Dock una scheda aggiornata (dati del film, date di riprese, troupe con ruoli, costo, piano finanziario e coproduzioni) come file nella cartella «Abisso · Ponte» del tuo Google Drive, che il Dock legge già. Niente codici fiscali, IBAN o compensi personali.</p>
       <div class="fgrid">${fld("dockName","Nome del progetto nel Dock",{def:S.script.title})}<label class="fld">Ultimo invio<input value="${pr.dock && pr.dock.at ? esc(new Date(pr.dock.at).toLocaleString("it-IT",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})) : "mai"}" disabled></label></div>
       <div class="row"><button class="btn primary" data-dockx="1">Aggiorna nel Dock</button>${pr.dock && pr.dock.file ? `<a class="btn" href="https://drive.google.com/file/d/${esc(pr.dock.file)}/view" target="_blank" rel="noopener">Apri il file</a>` : ""}<a class="btn" href="https://claude.ai/artifact/V4RiXv99GNqRKehpf83K7x" target="_blank" rel="noopener">Apri il Dock</a></div></section>
     <section class="box"><h3>Contatti</h3><div class="fgrid">${fld("cName","Referente")}${fld("cEmail","Email",{type:"email"})}${fld("cPhone","Telefono",{type:"tel"})}${fld("cWeb","Sito",{def:"abissostudio.it"})}</div></section>
@@ -320,15 +320,14 @@ async function dockExport(btn){
   try{
     crewLoad(); await googleTokenFor(DRIVE_SCOPE);
     const D = "https://www.googleapis.com/drive/v3/files";
-    if (pr.dock.folder){ try{ const f = await gfetch(`${D}/${pr.dock.folder}?fields=id,trashed`); if (f.trashed) pr.dock.folder = null; }catch(e){ pr.dock.folder = null; } }
-    if (!pr.dock.folder){ const f = await gfetch(D, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({name:"Abisso Film Manager", mimeType:"application/vnd.google-apps.folder"})}); pr.dock.folder = f.id; }
+    pr.dock.folder = await dockDir();
     const name = `Abisso Film Manager · ${S.script.title}.json`; const body = JSON.stringify(dockPayload(), null, 2);
     const bd = "abisso" + Date.now(); const multi = (meta) => `--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bd}--`;
     const U = "https://www.googleapis.com/upload/drive/v3/files";
     let ok = false;
     if (pr.dock.file){ try{ await gfetch(`${U}/${pr.dock.file}?uploadType=multipart`, {method:"PATCH", headers:{"Content-Type":`multipart/related; boundary=${bd}`}, body: multi({name})}); ok = true; }catch(e){ if (e.status!==404) throw e; } }
     if (!ok){ const f = await gfetch(`${U}?uploadType=multipart&fields=id`, {method:"POST", headers:{"Content-Type":`multipart/related; boundary=${bd}`}, body: multi({name, parents:[pr.dock.folder], description:"Scheda progetto per Abisso Dock, scritta da Abisso Film Manager"})}); pr.dock.file = f.id; }
-    pr.dock.at = Date.now(); save(); render(); toast("Scheda aggiornata nel Drive: il Dock la trova nella cartella «Abisso Film Manager».", 4500);
+    pr.dock.at = Date.now(); save(); render(); toast("Scheda aggiornata nel Drive: il Dock la trova nella cartella «Abisso · Ponte».", 4500);
   }catch(e){ gErr(e); }
   finally{ btn.disabled = false; btn.textContent = "Aggiorna nel Dock"; }
 }

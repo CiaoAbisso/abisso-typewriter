@@ -353,3 +353,22 @@ ol.sched li{border-radius:10px}
   .cs2{padding:12px} .cshead .ttl{font-size:20px} .cshead .callbox input,.cshead .callbox .call{font-size:24px;width:150px}
   .deck{gap:14px}
 }
+
+/* ---------- progetti del Dock ---------- */
+html{background:var(--bg)}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.dcard{background:var(--panel);border-radius:22px;display:flex;flex-direction:column;border:1.5px solid transparent;transition:transform .15s,border-color .15s;min-width:0}
+.dcard:hover{transform:translateY(-2px);border-color:var(--red)}
+.dcard.closed{opacity:.55}
+.dcard .dmain{all:unset;cursor:pointer;display:grid;gap:6px;padding:16px 18px;border-radius:22px}
+.dcard .dmain:focus-visible{outline:2px solid var(--red)}
+.dcard .dtop{display:flex;gap:6px;flex-wrap:wrap}
+.dcard b{font-family:var(--f-wide);font-size:15px;font-weight:600;line-height:1.25}
+.dcard small{color:var(--muted);font-size:12.5px}
+.dcard .dfoot{font-size:12px;color:var(--muted);margin-top:4px}
+.dcard .go{color:var(--red);font-weight:600}
+.dcard .doff{align-self:flex-start;margin:0 12px 12px;height:28px;font-size:12px}
+.pill.code{background:var(--ink);color:var(--navy);font-weight:700}
+.pill.fase{background:var(--panel-2);color:var(--ink)}
+.pill.f-riprese{background:var(--red);color:#fff} .pill.f-preproduzione{background:var(--coral);color:var(--navy)} .pill.f-finanziamento{background:var(--yellow);color:var(--navy)} .pill.f-sviluppo{background:var(--blue);color:var(--navy)} .pill.f-postproduzione{background:var(--pink);color:var(--navy)} .pill.f-distribuzione{background:var(--green);color:var(--navy)}
+.dsvc{margin-top:44px} .dsvc summary{cursor:pointer;list-style:none} .dsvc summary::-webkit-details-marker{display:none}

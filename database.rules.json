@@ -81,6 +81,10 @@
             }
           }
         }
+      },
+      "dock": {
+        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
+        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
       }
     },
     "f": {
