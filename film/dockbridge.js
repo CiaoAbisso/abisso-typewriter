@@ -1,11 +1,11 @@
 /* ================= Abisso Film Manager · ponte con Abisso Dock =================
    Il Dock (claude.ai) e il Film Manager (GitHub Pages + Firebase) si parlano attraverso il Drive dello studio,
    nella cartella «Abisso · Ponte»:
-     «Abisso Dock · registro.json»          lo crea il Film Manager, lo riempie il Dock: progetti, persone, location
+     «Abisso Dock · registro» (Google Sheet)   lo crea il Film Manager, lo riempie il Dock: progetti, persone, location
      «Abisso Film Manager · <titolo>.json»   lo scrive il Film Manager per ogni film, lo legge il Dock
    Il Film Manager usa solo il permesso drive.file: vede soltanto i file che ha creato lui.
    Una copia del registro resta in Firebase (b/dock, solo amministratori), così si vede da ogni computer senza riaprire Drive. */
-const DOCK_REG = "Abisso Dock · registro.json", DOCK_DIR = "Abisso · Ponte";
+const DOCK_REG = "Abisso Dock · registro", DOCK_DIR = "Abisso · Ponte";
 const DOCK = {reg:null, on:{}, loaded:false};
 const DRIVE_API = "https://www.googleapis.com/drive/v3/files";
 try{ const c = JSON.parse(localStorage.getItem("abb:dockreg") || "null"); if (c) DOCK.reg = c; }catch(e){}
@@ -34,21 +34,47 @@ async function driveJson(id){
   if (!r.ok) throw {code:"gapi", status:r.status, api:DRIVE_API};
   const t = await r.text(); try{ return JSON.parse(t || "{}"); }catch(e){ return {}; }
 }
+/* Il registro è un Google Sheet creato dal Film Manager (così lo può leggere con il solo permesso drive.file)
+   e riempito dal Dock: schede Info, Progetti, Persone, Location; la prima riga di ogni scheda è l'intestazione.
+   Le liste stanno in una cella separate da « ; ». */
+const DOCK_TABS = {
+  Progetti: ["codice","titolo","titoloInt","fase","formato","durata","anno","regia","sceneggiatura","produzione","logline","driveUrl","service","filmManager"],
+  Persone: ["id","tipo","nome","cognome","nomeCredito","nomeArte","email","telefono","citta","reparti","ruoli","livello","categoria","lingue","crediti","link","imdb","stato"],
+  Location: ["id","nome","comune","provincia","indirizzo","lat","lng","maps","categoria","tipo","ambiente","autorizzazione","permessi","fonte","scheda"]
+};
+const DOCK_LISTS = ["reparti","ruoli","lingue","permessi"];
+async function dockSheetCreate(dir){
+  const f = await gfetch(DRIVE_API + "?fields=id", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({name:DOCK_REG, parents:[dir], mimeType:"application/vnd.google-apps.spreadsheet", description:"Registro di Abisso Dock per il Film Manager: lo riempie il Dock, non modificarlo a mano."})});
+  const tabs = ["Info", ...Object.keys(DOCK_TABS)];
+  await gfetch(`${SHEETS}${f.id}:batchUpdate`, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({requests: [
+    {updateSheetProperties:{properties:{sheetId:0, title:"Info"}, fields:"title"}},
+    ...Object.keys(DOCK_TABS).map(t => ({addSheet:{properties:{title:t, gridProperties:{frozenRowCount:1}}}}))]})});
+  await gfetch(`${SHEETS}${f.id}/values:batchUpdate`, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({valueInputOption:"RAW", data:[
+    {range:"Info!A1:B3", values:[["schema","abisso-dock-registro/1"],["aggiornato",""],["nota","Lo riempie Abisso Dock. Non modificare a mano."]]},
+    ...Object.entries(DOCK_TABS).map(([t,h]) => ({range:`${t}!A1`, values:[h]}))]})});
+  return f.id;
+}
+async function dockSheetRead(id){
+  const r = await gfetch(`${SHEETS}${id}/values:batchGet?` + ["Info","Progetti","Persone","Location"].map(t => "ranges=" + encodeURIComponent(t)).join("&"));
+  const [info, ...tabs] = r.valueRanges.map(v => v.values || []);
+  const meta = Object.fromEntries(info.map(row => [row[0], row[1]]));
+  const rows = vals => { const [h, ...body] = vals; if (!h) return []; return body.filter(r => r.some(Boolean)).map(r => Object.fromEntries(h.map((k,i) => { let v = r[i] ?? "";
+    if (DOCK_LISTS.includes(k)) v = String(v).split(/\s*;\s*/).filter(Boolean); else if (k==="service" || k==="filmManager") v = /^(true|vero|1|sì|si)$/i.test(String(v)); else if (k==="lat" || k==="lng") v = v==="" ? null : +String(v).replace(",",".");
+    return [k, v]; }))); };
+  return {schema: meta.schema || "abisso-dock-registro/1", aggiornato: meta.aggiornato || null, progetti: rows(tabs[0]), persone: rows(tabs[1]), location: rows(tabs[2]), fileId: id};
+}
 /* «Collega al Dock» la prima volta, «Aggiorna dal Dock» le altre: stessa funzione */
 async function dockPull(btn){
   if (btn){ btn.disabled = true; btn.textContent = "Leggo il registro…"; }
   try{
     await googleTokenFor(DRIVE_SCOPE);
     const dir = await dockDir();
-    let f = await driveFind(DOCK_REG, dir);
-    if (!f){
-      const bd = "abisso" + Date.now(); const body = JSON.stringify({schema:"abisso-dock-registro/1", aggiornato:null, nota:"Lo riempie Abisso Dock. Non modificare a mano.", progetti:[], persone:[], location:[]});
-      const multi = `--${bd}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify({name:DOCK_REG, parents:[dir], mimeType:"application/json", description:"Registro di Abisso Dock per il Film Manager"})}\r\n--${bd}\r\nContent-Type: application/json\r\n\r\n${body}\r\n--${bd}--`;
-      f = await gfetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id", {method:"POST", headers:{"Content-Type":`multipart/related; boundary=${bd}`}, body: multi});
-      toast("Collegamento creato nel Drive. Il registro si riempie al prossimo aggiornamento del Dock.", 6000);
-    }
-    const reg = await driveJson(f.id);
-    if (reg && reg.schema){ DOCK.reg = {...reg, fileId: f.id}; await dockSaveSnapshot(); if (reg.aggiornato) toast(`Registro del Dock letto: ${(reg.progetti||[]).length} progetti, ${(reg.persone||[]).length} persone, ${(reg.location||[]).length} location.`, 4500); }
+    let f = await driveFind(DOCK_REG, dir); let id = f && f.id;
+    if (f){ const m = await gfetch(`${DRIVE_API}/${f.id}?fields=mimeType`); if (m.mimeType!=="application/vnd.google-apps.spreadsheet") id = null; }
+    if (!id){ id = await dockSheetCreate(dir); toast("Registro creato nel Drive, cartella «Abisso · Ponte». Si riempie al prossimo aggiornamento del Dock.", 6000); }
+    const reg = await dockSheetRead(id);
+    DOCK.reg = reg; await dockSaveSnapshot();
+    if (reg.aggiornato) toast(`Registro del Dock letto: ${reg.progetti.length} progetti, ${reg.persone.length} persone, ${reg.location.length} location.`, 4500);
   }catch(e){ gErr(e); }
   finally{ if (btn){ btn.disabled = false; } if (!S) projectsView(); }
 }
