@@ -7,102 +7,48 @@
         ".read": "$pid.length === 32",
         ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
         "m": {
-          ".write": "$pid.length === 32 && ((root.child('p').child($pid).child('m').exists()) && newData.exists())",
+          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && newData.exists() && root.child('p').child($pid).child('m').child('ro').val() !== true",
           "title": {
             ".validate": "newData.isString() && newData.val().length < 300"
+          },
+          "ro": {
+            ".validate": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
+          },
+          "rc": {
+            ".validate": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
+          },
+          "n": {
+            "$nid": {
+              ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && (root.child('p').child($pid).child('m').child('ro').val() !== true || root.child('p').child($pid).child('m').child('rc').val() === true)",
+              ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 20000)"
+            }
           }
         },
         "b": {
-          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists()",
+          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true",
           "$bid": {
             ".validate": "newData.hasChildren(['t','x','k']) && newData.child('t').isString() && newData.child('x').isString() && newData.child('x').val().length < 20000 && newData.child('k').isNumber()"
           }
         },
         "bd": {
-          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists()",
+          ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true",
           ".validate": "newData.isString() && newData.val().length < 500000"
         },
         "u": {
           "$cid": {
-            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists()"
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true"
           }
         },
         "h": {
           "$hid": {
-            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && newData.exists() && (!data.exists() || data.child('start').val() === newData.child('start').val())"
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true && newData.exists() && (!data.exists() || data.child('start').val() === newData.child('start').val())"
           }
         },
         "s": {
           "$hid": {
-            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && newData.exists()",
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true && newData.exists()",
             ".validate": "newData.isString() && newData.val().length < 2000000"
           }
-        }
-      }
-    },
-    "u": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-        "d": {
-          "$sid": {
-            "body": {
-              ".validate": "newData.isString() && newData.val().length < 5000000"
-            }
-          }
-        }
-      }
-    },
-    "b": {
-      "index": {
-        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
-      },
-      "my": {
-        "$ek": {
-          ".read": "auth != null && auth.token.email_verified === true && auth.token.email.toLowerCase().replace('.', ',') === $ek",
-          ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
-        }
-      },
-      "p": {
-        "$pid": {
-          ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && data.child('members').child(auth.token.email.toLowerCase().replace('.', ',')).exists())",
-          ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-          "media": {
-            ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && ((data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('produzione').val() === 'e' || (!data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (data.parent().child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod')))))",
-            "$k": {
-              ".validate": "newData.isString() && newData.val().length < 3000000"
-            }
-          },
-          "data": {
-            ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-            "$k": {
-              ".write": "auth != null && auth.token.email_verified === true && ((($k === 'cats' || $k === 'extra' || $k === 'tags') && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('spoglio').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'ad')))) || (($k === 'order' || $k === 'set' || $k === 'unavail' || $k === 'times') && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('piano').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'ad')))) || (($k === 'cs' || $k === 'csd') && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('set').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'ad')))) || ($k === 'prod' && ((root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('produzione').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod'))) || (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('dossier').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod'))))))"
-            }
-          }
-        }
-      },
-      "dock": {
-        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
-      }
-    },
-    "f": {
-      "people": {
-        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
-      },
-      "photos": {
-        ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-        ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'",
-        "$id": {
-          ".validate": "newData.isString() && newData.val().length < 1000000"
-        }
-      },
-      "crew": {
-        "$pid": {
-          ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && ((root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('troupe').val() === 'e' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('troupe').val() === 'v' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod'))) || (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('budget').val() === 'e' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('budget').val() === 'v' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod'))) || (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('produzione').val() === 'e' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('produzione').val() === 'v' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'regia'))) || (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('dossier').val() === 'e' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('dossier').val() === 'v' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod' || root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'regia')))))",
-          ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com' || (auth != null && auth.token.email_verified === true && ((root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('troupe').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod'))) || (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').child('produzione').val() === 'e' || (!root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('areas').exists() && (root.child('b').child('p').child($pid).child('members').child(auth.token.email.toLowerCase().replace('.', ',')).child('role').val() === 'prod')))))"
         }
       }
     }
