@@ -54,7 +54,7 @@ function gErr(e){ console.error(e);
   if (e.reason==="accessNotConfigured" || e.reason==="SERVICE_DISABLED" || /has not been used|is disabled/i.test(e.message||"")) apiHelp(e);
   else if (e.code==="auth/popup-blocked") toast("Il browser ha bloccato la finestra di Google: consenti i popup e riprova.", 4500);
   else if (e.code==="auth/popup-closed-by-user") toast("Finestra di Google chiusa: operazione annullata.");
-  else { gTokB = null; toast("Google non ha completato l'operazione. Riprova.", 4000); } }
+  else { gTokB = null; toast("Google non ha completato l'operazione" + (e.message ? `: ${e.message}` : (e.status ? ` (errore ${e.status})` : "")) + ". Riprova.", 7000); } }
 
 /* dati per i fogli DATI_* */
 function budgetData(){
