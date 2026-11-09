@@ -538,7 +538,11 @@ const I18N = {"Copioni": {"en": "Scripts", "de": "Drehbücher", "fr": "Scénario
 const LANGS = ["it","en","de","fr","es","uk"];
 let UI = (() => { let l = null; try{ l = localStorage.getItem("abt:ui"); }catch(e){} if (!l){ const n = (navigator.language||"it").slice(0,2).toLowerCase(); l = LANGS.includes(n) ? n : "it"; } return LANGS.includes(l) ? l : "it"; })();
 const LOCALE = () => ({it:"it-IT", en:"en-GB", de:"de-DE", fr:"fr-FR", es:"es-ES", uk:"uk-UA"})[UI];
-function T(k, v){ let s = (I18N[k] && I18N[k][UI]) || k; if (v) for (const n in v) s = s.split("{"+n+"}").join(v[n]); return s; }
+const IT_ART = {il:"lo", del:"dello", al:"allo", nel:"nello", dal:"dallo", sul:"sullo", un:"uno", i:"gli", dei:"degli", ai:"agli", nei:"negli", dai:"dagli", sui:"sugli"};
+const itScript = s => s.indexOf("opion")<0 ? s : s
+  .replace(/\b(il|del|al|nel|dal|sul|un|i|dei|ai|nei|dai|sui) (copion[ei])\b/gi, (m, a) => { const r = IT_ART[a.toLowerCase()]; return (a[0]===a[0].toUpperCase() ? r[0].toUpperCase() + r.slice(1) : r) + " script"; })
+  .replace(/\bCopion[ei]\b/g, "Script").replace(/\bcopion[ei]\b/g, "script");
+function T(k, v){ let s = (I18N[k] && I18N[k][UI]) || (UI==="it" ? itScript(k) : k); if (v) for (const n in v) s = s.split("{"+n+"}").join(v[n]); return s; }
 const LANG_NAMES = {it:"Italiano", en:"English", de:"Deutsch", fr:"Français", es:"Español", uk:"Українська"};
 /* screenplay vocabulary per script language */
 const SL = {
@@ -1542,6 +1546,9 @@ const SAMPLES = {
     ["c","ELENA"],["d","Ich weiß. Ich hab es von unten gesehen."]], ex:"(Beispiel)", draft:"Beispielfassung"}
 };
 function sampleDoc(){
+  return {id: uid(), title: T("Senza titolo"), isSample: true, titlePage:{}, settings:{lang:UI, labels: (UI==="it" || !CONT[UI]) ? "en" : UI}, breakdown:{}, body: [["s","",uid()]]};
+}
+function exampleDoc(){
   const X = SAMPLES[UI] || SAMPLES.it;
   return {id: uid(), title: `${X.title} ${X.ex}`, isSample: true, titlePage:{title:X.title, credit:SL[UI].credit, author:"Martin Alan Tranquillini", draft:X.draft}, settings:{lang:UI, labels: (UI==="it" || !CONT[UI]) ? "en" : UI}, breakdown:{},
     body: X.B.map(([t,x]) => [t,x, t==="s"?uid():""])};
@@ -3616,13 +3623,10 @@ async function boot(){
   Store = (db && userId) ? makeDBStore(db, userId) : LocalStore;
   let list = [];
   try{ list = await Store.list(); }catch(e){ Store = LocalStore; list = await LocalStore.list(); }
-  setSaveStatus(cur.isSample ? (Store===LocalStore ? T("Esempio · si salva su questo dispositivo quando scrivi") : T("Esempio · si salva nel cloud quando scrivi")) : Store.label, Store===LocalStore?"local":"");
+  setSaveStatus(Store.label, Store===LocalStore?"local":"");
   const hm = BOOT_HASH.match(/^#c-([a-z0-9]+)$/);
   if (hm && DB){ await openShared(hm[1]); return; }
-  if (list.length && cur.isSample && !dirty){
-    const last = lsGet("abt:last"); const pick = list.find(x=>x.id===last) || list[0];
-    await openScript(pick.id);
-  }
+  if (cur.isSample && !dirty) setView("profile");
 }
 boot();
 </script>
