@@ -657,6 +657,30 @@ const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = se
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
 function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+/* big local storage (IndexedDB): hundreds of MB instead of ~5 MB; falls back to localStorage */
+const IDB = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => { try{ const r = indexedDB.open("abisso-typewriter", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }catch(e){ rej(e); } }).catch(e => { dbp = Promise.resolve(null); return null; }));
+  const tx = async (mode, fn) => { const db = await open(); if (!db) throw new Error("no idb"); return new Promise((res, rej) => { const t = db.transaction("kv", mode), st = t.objectStore("kv"), r = fn(st); t.oncomplete = () => res(r && r.result); t.onerror = t.onabort = () => rej(t.error); }); };
+  return {
+    async get(k){ try{ const v = await tx("readonly", st => st.get(k)); if (v!==undefined && v!==null) return v; }catch(e){} return lsGet(k); },
+    async set(k, v){ try{ await tx("readwrite", st => st.put(v, k)); lsDel(k); return true; }catch(e){ return lsSet(k, v); } },
+    async del(k){ try{ await tx("readwrite", st => st.delete(k)); }catch(e){} lsDel(k); }
+  };
+})();
+/* compressed text for history copies: "z1:" + base64(deflate-raw) — lossless; plain text if the browser can't compress */
+async function packText(str){
+  try{ if (typeof CompressionStream==="undefined" || str.length < 2000) return str;
+    const buf = await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream("deflate-raw"))).arrayBuffer();
+    const u = new Uint8Array(buf); let bin = ""; for (let i=0; i<u.length; i+=0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i+0x8000));
+    return "z1:" + btoa(bin);
+  }catch(e){ return str; }
+}
+async function unpackText(v){
+  if (typeof v!=="string" || !v.startsWith("z1:")) return v;
+  const bin = atob(v.slice(3)), u = new Uint8Array(bin.length); for (let i=0; i<bin.length; i++) u[i] = bin.charCodeAt(i);
+  return await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+}
 function hash(s){ let h=5381; for(let i=0;i<s.length;i++) h=((h<<5)+h+s.charCodeAt(i))|0; return (h>>>0).toString(36); }
 function eighths(e){ const w=Math.floor(e/8), r=e%8; return w ? (r ? `${w} ${r}/8` : `${w}`) : `${r}/8`; }
 function toast(msg, ms=2600){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>t.hidden=true, ms); }
@@ -1391,14 +1415,14 @@ const CHUNK = 60000;
 const LocalStore = {
   get label(){ return T("Salvato su questo dispositivo"); },
   async list(){ try{ return JSON.parse(lsGet("abt:index")||"[]"); }catch(e){ return []; } },
-  async load(id){ const raw = lsGet("abt:s:"+id); if (!raw) return null; return JSON.parse(raw); },
+  async load(id){ const raw = await IDB.get("abt:s:"+id); if (!raw) return null; return JSON.parse(raw); },
   async save(doc){
-    const ok = lsSet("abt:s:"+doc.id, JSON.stringify(doc));
+    const ok = await IDB.set("abt:s:"+doc.id, JSON.stringify(doc));
     const idx = (await this.list()).filter(x=>x.id!==doc.id); idx.unshift({id:doc.id, title:doc.title, updated:doc.updated});
     lsSet("abt:index", JSON.stringify(idx));
     if (!ok) throw {code:"local_full", message:"Spazio locale esaurito"};
   },
-  async remove(id){ lsDel("abt:s:"+id); const idx = (await this.list()).filter(x=>x.id!==id); lsSet("abt:index", JSON.stringify(idx)); }
+  async remove(id){ await IDB.del("abt:s:"+id); const idx = (await this.list()).filter(x=>x.id!==id); lsSet("abt:index", JSON.stringify(idx)); }
 };
 function makeDBStore(db, userId){
   const col = db.collection("data/users/"+userId);
@@ -1665,7 +1689,7 @@ const BOOT_HASH = location.hash;
 const FB_VER = "10.12.2";
 let DB = null, USER = null, ROOM = null, canWrite = true, readOnly = false;
 let shBase = [], shUnwatch = null, composing = false, histCur = null, shRoom = null, peersNow = [];
-let PID = null, remoteMap = new Map(), shApplyT = null, lastSnapAt = 0, connId = null, presOff = null;
+let PID = null, remoteMap = new Map(), shApplyT = null, lastSnapAt = 0, snapHid = null, lastSnapName = null, lastSnapUpd = 0, connId = null, presOff = null;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const myName = () => (lsGet("abt:name") || "").trim();
 const sameRow = (a,b) => a && b && a[0]===b[0] && a[1]===b[1];
@@ -1805,9 +1829,9 @@ function diffStats(a, b){
 function cacheKey(sid){ return "abt:shc:" + sid; }
 function writeCache(){
   if (!cur || !cur.shared || !PID) return;
-  try{ localStorage.setItem(cacheKey(cur.shared), jstr({pid: PID, base: shBase, local: readModel(), title: cur.title, titlePage: cur.titlePage, settings: S, breakdown: cur.breakdown, x: cur.x || null, at: Date.now()})); }catch(e){}
+  try{ IDB.set(cacheKey(cur.shared), jstr({pid: PID, base: shBase, local: readModel(), title: cur.title, titlePage: cur.titlePage, settings: S, breakdown: cur.breakdown, x: cur.x || null, at: Date.now()})).catch(()=>{}); }catch(e){}
 }
-function readCache(sid){ try{ return JSON.parse(localStorage.getItem(cacheKey(sid)) || "null"); }catch(e){ return null; } }
+async function readCache(sid){ try{ return JSON.parse((await IDB.get(cacheKey(sid))) || "null"); }catch(e){ return null; } }
 const writeCacheSoon = debounce(writeCache, 400);
 ed.addEventListener("input", () => { if (cur && cur.shared) writeCacheSoon(); });
 
@@ -1887,7 +1911,9 @@ async function recordHistory(sid, before, after, label){
   if (!st.changed && !label) return;
   const up = {};
   up[`p/${PID}/h/${histCur.hid}`] = {at: now, start: histCur.start, name, added: st.added, removed: st.removed, scenes: st.scenes.slice(0, 40), label: label || ""};
-  if (fresh || label || now - lastSnapAt > 60000){ up[`p/${PID}/s/${histCur.hid}`] = jstr(after); lastSnapAt = now; }
+  /* a full copy at most every 30 minutes (or when someone else writes), compressed; inside a copy's own session it is refreshed */
+  if (label || (fresh && (now - lastSnapAt > 30*60*1000 || lastSnapName!==name)) || (snapHid===histCur.hid && now - lastSnapUpd > 60000)){
+    up[`p/${PID}/s/${histCur.hid}`] = await packText(jstr(after)); if (snapHid!==histCur.hid) lastSnapAt = now; snapHid = histCur.hid; lastSnapName = name; lastSnapUpd = now; }
   try{ await rtWrite(RT.update(up)); }catch(e){}
   if (label) histCur = null;
 }
@@ -1992,7 +2018,7 @@ async function sharedSaveX(newVid){
   Object.keys(viewNotes).forEach(vp => { const now = vnotes[vp] || {}, was = viewNotes[vp] || {};
     Object.entries(now).forEach(([k, v]) => { if (jstr(was[k])!==jstr(v)) up[`p/${vp}/m/n/${k}`] = jstr(v); });
     Object.keys(was).forEach(k => { if (!now[k]) up[`p/${vp}/m/n/${k}`] = null; }); });
-  if (newVid && cur.xb && cur.xb[newVid]) up[`p/${PID}/s/${newVid}`] = jstr(cur.xb[newVid]);
+  if (newVid && cur.xb && cur.xb[newVid]) up[`p/${PID}/s/${newVid}`] = await packText(jstr(cur.xb[newVid]));
   writeCache();
   try{ await RT.update(up); }catch(e){ toast(T("Salvataggio non riuscito: riprovo tra poco")); }
   mirrorSoon();
@@ -2000,7 +2026,7 @@ async function sharedSaveX(newVid){
 function blockAuthor(id){ const v = id && remoteMap.get(id); return (v && v.a) || ""; }
 async function sharedGetBody(vid){
   if (!PID) return null;
-  try{ const v = await withTimeout(RT.get(`p/${PID}/s/${vid}`), 8000); return v ? JSON.parse(v) : null; }catch(e){ return null; }
+  try{ const v = await withTimeout(RT.get(`p/${PID}/s/${vid}`), 8000); return v ? JSON.parse(await unpackText(v)) : null; }catch(e){ return null; }
 }
 
 /* --- reduced-permission links: read-only copies the author's device keeps in sync --- */
@@ -2055,7 +2081,7 @@ async function openShared(sid){
   if (!DB){ toast(T("Il salvataggio condiviso non è ancora configurato.")); return; }
   if (dirty) await saveNow();
   setSaveStatus(T("Apertura…"), "busy");
-  const known = projOf(sid), cache = readCache(sid);
+  const known = projOf(sid), cache = await readCache(sid);
   let pw = known ? (known.pw || "") : "", pid = cache ? cache.pid : await pidFor(sid, pw), meta = null, wrong = false, offline = false;
   for (let tries=0; tries<6; tries++){
     try{ meta = await withTimeout(RT.get(`p/${pid}/m`), (cache && (!ONLINE || !navigator.onLine)) ? 1500 : 7000); }catch(e){ if (cache){ offline = true; break; } meta = null; }
@@ -2143,7 +2169,7 @@ async function makeShared(){
   up[`p/${pid}/bd`] = jstr(cur.breakdown||{});
   const hid = Date.now().toString(36) + "-start";
   up[`p/${pid}/h/${hid}`] = {at: Date.now(), start: Date.now(), name: myName(), added: 0, removed: 0, scenes: [], label: "shared"};
-  up[`p/${pid}/s/${hid}`] = jstr(body);
+  up[`p/${pid}/s/${hid}`] = await packText(jstr(body));
   setSaveStatus(T("Salvataggio…"), "busy");
   try{
     await withTimeout(RT.update(up), 15000);
@@ -2207,7 +2233,7 @@ async function showHistory(){
     if (b.dataset.confirm!=="1"){ b.dataset.confirm = "1"; b.textContent = T("Conferma"); return; }
     let snapS = null; try{ snapS = await RT.get(`p/${pid}/s/${b.dataset.restore}`); }catch(err){}
     if (!snapS){ toast(T("Per questa voce non c'è una copia salvata: scegli una riga vicina.")); return; }
-    let body; try{ body = JSON.parse(snapS); }catch(err){ return; }
+    let body; try{ body = JSON.parse(await unpackText(snapS)); }catch(err){ return; }
     closeOverlay();
     pushHist(true);
     const before = readModel();
