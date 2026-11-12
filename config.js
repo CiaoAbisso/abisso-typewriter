@@ -10,9 +10,6 @@ window.ABISSO_FIREBASE = {
 };
 
 // L'autore: solo questo account Google può creare o eliminare copioni condivisi.
+// È il codice anonimo dell'account (UID utente in Firebase → Authentication), non l'email.
 // Se lo cambi, cambialo anche nelle regole del database (database.rules.json).
-window.ABISSO_OWNER = "ciao.abissostudio@gmail.com";
-
-// Account Google che possono salvare i propri copioni nel cloud (oltre all'autore).
-// Se ne aggiungi uno, aggiungilo anche alla regola "u" in database.rules.json.
-window.ABISSO_ADMINS = ["ciao.abissostudio@gmail.com"];
+window.ABISSO_OWNER_UID = "oL1ZHLHKd9Zxx0oD3B8WXPZCODy1";
