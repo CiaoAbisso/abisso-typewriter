@@ -11,6 +11,9 @@
           "title": {
             ".validate": "newData.isString() && newData.val().length < 300"
           },
+          "byName": {
+            ".validate": "newData.isString() && newData.val().length <= 100"
+          },
           "ro": {
             ".validate": "auth != null && auth.token.email_verified === true && auth.token.email === 'ciao.abissostudio@gmail.com'"
           },
@@ -20,14 +23,32 @@
           "n": {
             "$nid": {
               ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && (root.child('p').child($pid).child('m').child('ro').val() !== true || root.child('p').child($pid).child('m').child('rc').val() === true)",
-              ".validate": "!newData.exists() || (newData.isString() && newData.val().length < 20000)"
+              ".validate": "$nid.length <= 64 && (!newData.exists() || (newData.isString() && newData.val().length < 20000))"
             }
+          },
+          "$other": {
+            ".validate": "(newData.isString() && newData.val().length < 1500000) || newData.isNumber() || newData.isBoolean()"
           }
         },
         "b": {
           ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true",
           "$bid": {
-            ".validate": "newData.hasChildren(['t','x','k']) && newData.child('t').isString() && newData.child('x').isString() && newData.child('x').val().length < 20000 && newData.child('k').isNumber()"
+            ".validate": "$bid.length <= 64 && newData.hasChildren(['t','x','k']) && newData.child('t').isString() && newData.child('t').val().matches(/^[sacpdth]$/) && newData.child('x').isString() && newData.child('x').val().length < 20000 && newData.child('k').isNumber() && (!newData.child('a').exists() || (newData.child('a').isString() && newData.child('a').val().length <= 100))",
+            "t": {
+              ".validate": true
+            },
+            "x": {
+              ".validate": true
+            },
+            "k": {
+              ".validate": true
+            },
+            "a": {
+              ".validate": true
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
         "bd": {
@@ -36,18 +57,32 @@
         },
         "u": {
           "$cid": {
-            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true"
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true",
+            ".validate": "$cid.length <= 64 && newData.child('name').isString() && newData.child('name').val().length <= 100 && newData.child('scene').isNumber() && newData.child('at').isNumber()",
+            "name": {
+              ".validate": true
+            },
+            "scene": {
+              ".validate": true
+            },
+            "at": {
+              ".validate": true
+            },
+            "$other": {
+              ".validate": false
+            }
           }
         },
         "h": {
           "$hid": {
-            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true && newData.exists() && (!data.exists() || data.child('start').val() === newData.child('start').val())"
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true && newData.exists() && (!data.exists() || (data.child('start').val() === newData.child('start').val() && data.child('start').isNumber() && data.child('start').val() > now - 10800000))",
+            ".validate": "$hid.length <= 64 && newData.child('start').isNumber() && newData.child('name').isString() && newData.child('name').val().length <= 100"
           }
         },
         "s": {
           "$hid": {
-            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true && newData.exists()",
-            ".validate": "newData.isString() && newData.val().length < 2000000"
+            ".write": "$pid.length === 32 && root.child('p').child($pid).child('m').exists() && root.child('p').child($pid).child('m').child('ro').val() !== true && newData.exists() && (!data.exists() || (root.child('p').child($pid).child('h').child($hid).child('start').isNumber() && root.child('p').child($pid).child('h').child($hid).child('start').val() > now - 10800000))",
+            ".validate": "$hid.length <= 64 && newData.isString() && newData.val().length < 2000000"
           }
         }
       }

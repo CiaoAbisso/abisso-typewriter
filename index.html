@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-pOhnbe4VVOUa1TybnWLIjuXQG07SROJkhzjFMG+uPNo=' 'sha256-OwWAJ76nHul62eAp4pKfn3+5s1CMSDvzwRbmnsuKT9k=' https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' data: blob: https://*.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com https://cdnjs.cloudflare.com https://www.gstatic.com; frame-src https://abisso-typewriter-e4285.firebaseapp.com https://apis.google.com https://accounts.google.com https://*.firebasedatabase.app https://*.firebaseio.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; media-src 'self' blob: data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ff0000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23ff0000'/%3E%3Crect x='9' y='7' width='7' height='18' fill='%23fff'/%3E%3C/svg%3E">
@@ -653,6 +654,8 @@ const coarse = matchMedia("(pointer:coarse)").matches;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+/* unguessable id for share links (crypto random, ~103 bits) */
+const secretId = (n = 20) => { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(b => "abcdefghijklmnopqrstuvwxyz0123456789"[b % 36]).join(""); };
 const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
 function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
@@ -953,6 +956,7 @@ let lastCaret = {i:0, off:0};
 
 /* ============ DOM model ============ */
 function makeEl(t, txt, id){
+  if (!TYPE_KEYS[t]) t = "a"; if (id && !/^[\w-]{1,64}$/.test(id)) id = "";
   const el = document.createElement("div");
   el.className = "el t-"+t; el.dataset.t = t; el.dataset.id = id || uid();
   setText(el, txt||"");
@@ -1691,7 +1695,7 @@ let DB = null, USER = null, ROOM = null, canWrite = true, readOnly = false;
 let shBase = [], shUnwatch = null, composing = false, histCur = null, shRoom = null, peersNow = [];
 let PID = null, remoteMap = new Map(), shApplyT = null, lastSnapAt = 0, snapHid = null, lastSnapName = null, lastSnapUpd = 0, connId = null, presOff = null;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const myName = () => (lsGet("abt:name") || "").trim();
+const myName = () => (lsGet("abt:name") || "").trim().slice(0, 60);
 const sameRow = (a,b) => a && b && a[0]===b[0] && a[1]===b[1];
 const jstr = x => JSON.stringify(x);
 ed.addEventListener("compositionstart", () => composing = true);
@@ -1957,7 +1961,7 @@ function renderShareBar(){
   const seen = new Set(); const people = [];
   others.forEach(p => { const nm = String((p.presence && p.presence.name) || "?").slice(0, 40); const sc = p.presence && p.presence.scene; const key = nm+"|"+sc; if (seen.has(key)) return; seen.add(key); people.push({nm, sc}); });
   bar.innerHTML = `<span class="sh-tag">${T("Condiviso")}</span>${ONLINE ? "" : `<span class="sh-ro">${T("Offline · le modifiche partono quando torni online")}</span>`}
-    <span class="sh-people"><span class="sh-p me" title="${esc(T("Tu"))}">${esc(myName() || T("Tu"))}</span>${people.map(p => `<span class="sh-p">${esc(p.nm)}${p.sc ? ` · ${T("sc.")} ${p.sc}` : ""}</span>`).join("")}</span>
+    <span class="sh-people"><span class="sh-p me" title="${esc(T("Tu"))}">${esc(myName() || T("Tu"))}</span>${people.map(p => `<span class="sh-p">${esc(p.nm)}${p.sc ? ` · ${T("sc.")} ${esc(String(p.sc).slice(0,12))}` : ""}</span>`).join("")}</span>
     <span class="sh-acts"><button class="sh-btn" data-sh="hist">${T("Cronologia")}</button><button class="sh-btn" data-sh="share">${T("Link")}</button></span>`;
 }
 $("#shbar").addEventListener("click", e => { const b = e.target.closest("[data-sh]"); if (!b) return; if (b.dataset.sh==="hist") showHistory(); else showShare(); });
@@ -2063,7 +2067,7 @@ async function mirrorViews(){
 }
 async function makeView(mode){
   if (!(await ensureAuthor())) return;
-  const sid = (uid() + uid()).replace(/[^a-z0-9]/g, "").slice(0, 20), vp = await pidFor(sid, "");
+  const sid = secretId(20), vp = await pidFor(sid, "");
   const up = {};
   up[`p/${vp}/m`] = {title: cur.title || T("Senza titolo"), titlePage: jstr(cur.titlePage||{}), settings: jstr(S), created: Date.now(), updated: Date.now(), byName: myName() || "", v: 1, ro: true, rc: mode==="comment"};
   try{ await RT.update(up); await RT.update(await viewPayload(vp, mode)); }catch(e){ toast(T("Non sono riuscito a creare il link.")); return; }
@@ -2159,7 +2163,7 @@ async function makeShared(){
     $("#overlay .modal [data-no]").onclick = () => { closeOverlay(); resolve(null); };
   });
   if (pw===null) return;
-  const sid = (uid() + uid()).replace(/[^a-z0-9]/g, "").slice(0, 20);
+  const sid = secretId(20);
   const pid = await pidFor(sid, pw);
   const body = readModel();
   const {keys} = (remoteMap = new Map(), assignKeys(body));
@@ -2168,7 +2172,7 @@ async function makeShared(){
   up[`p/${pid}/m`] = {title: cur.title || T("Senza titolo"), titlePage: jstr(cur.titlePage||{}), settings: jstr(S), created: Date.now(), updated: Date.now(), byName: myName(), v: 1};
   up[`p/${pid}/bd`] = jstr(cur.breakdown||{});
   const hid = Date.now().toString(36) + "-start";
-  up[`p/${pid}/h/${hid}`] = {at: Date.now(), start: Date.now(), name: myName(), added: 0, removed: 0, scenes: [], label: "shared"};
+  up[`p/${pid}/h/${hid}`] = {at: Date.now(), start: Date.now(), name: myName() || "?", added: 0, removed: 0, scenes: [], label: "shared"};
   up[`p/${pid}/s/${hid}`] = await packText(jstr(body));
   setSaveStatus(T("Salvataggio…"), "busy");
   try{
@@ -2197,7 +2201,7 @@ function showShare(first){
     <p class="empty-note" style="padding:8px 0 0">${T("Chi ha il link può modificare tutto: mandalo solo a chi lavora al copione. Dalla cronologia puoi sempre tornare a una versione precedente.")}</p>
     ${IS_OWNER ? `<h4 class="rv-h">${T("Link con meno permessi")}</h4>
     <p class="rv-p rv-small">${T("Per chi deve solo leggere, o leggere e lasciare note: riceve una copia che si aggiorna da sola quando tu scrivi, ma non può cambiare il testo.")}</p>
-    <div class="rv-list">${((cur.x && cur.x.views) || []).map(v => { const l = location.origin + location.pathname + "#c-" + v.sid; return `<div class="rv-it"><b>${T(v.mode==="comment" ? "Lettura e note" : "Solo lettura")}</b><span>${fmtDT(v.at)}</span><button data-vcopy="${esc(l)}">${T("Copia link")}</button><button data-vdel="${v.sid}">${T("Elimina")}</button></div>`; }).join("")}</div>
+    <div class="rv-list">${((cur.x && cur.x.views) || []).map(v => { const l = location.origin + location.pathname + "#c-" + v.sid; return `<div class="rv-it"><b>${T(v.mode==="comment" ? "Lettura e note" : "Solo lettura")}</b><span>${fmtDT(v.at)}</span><button data-vcopy="${esc(l)}">${T("Copia link")}</button><button data-vdel="${esc(v.sid)}">${T("Elimina")}</button></div>`; }).join("")}</div>
     <div class="rv-acts"><button class="btn" data-view-new="read">+ ${T("Solo lettura")}</button><button class="btn" data-view-new="comment">+ ${T("Lettura e note")}</button></div>` : ""}
     <div class="row"><button class="btn" data-close>${T("Chiudi")}</button></div></div>`);
   $("#overlay .modal").addEventListener("click", async e => {
@@ -2415,7 +2419,7 @@ function renderBD(){
         h += `<div class="strip-body"><div class="cat"><h4>${T("Personaggi")}</h4><div class="tags">${s.cast.map(n=>`<span class="tag" style="padding-right:7px">${esc(n)}${s.speakers[n]?"":" <small style='color:var(--muted)'>"+T("(non parla)")+"</small>"}</span>`).join("")||"<small>—</small>"}</div></div>`;
         CATS.forEach(([k,l]) => {
           const items = b[k] || [];
-          h += `<div class="cat"><h4>${l}</h4><div class="tags">${items.map((it,ix)=>`<span class="tag">${esc(it)}<button data-rm="${esc(s.id)}|${k}|${ix}" aria-label="${esc(T("Rimuovi {x}",{x:it}))}">×</button></span>`).join("")}<input class="tag-add" data-add="${esc(s.id)}|${k}" placeholder="${T("+ aggiungi")}" aria-label="${esc(T("Aggiungi a {x}",{x:l}))}"></div></div>`;
+          h += `<div class="cat"><h4>${l}</h4><div class="tags">${items.map((it,ix)=>`<span class="tag">${esc(it)}<button data-rm="${esc(s.id)}|${esc(k)}|${ix}" aria-label="${esc(T("Rimuovi {x}",{x:it}))}">×</button></span>`).join("")}<input class="tag-add" data-add="${esc(s.id)}|${esc(k)}" placeholder="${T("+ aggiungi")}" aria-label="${esc(T("Aggiungi a {x}",{x:l}))}"></div></div>`;
         });
         if (b.note) h += `<div class="ai-note"><b>${T("Nota AI:")}</b> ${esc(b.note)}</div>`;
         h += `</div>`;
@@ -2643,7 +2647,7 @@ async function showScripts(){
   overlay(`<div class="modal" role="dialog" aria-label="${T("Copioni")}"><h3>${T("Copioni")}</h3>
     <div class="row" style="justify-content:flex-start;margin:0 0 12px"><button class="btn primary" data-a="new">${T("Nuovo copione")}</button><button class="btn" data-a="import">${T("Importa file")}</button></div>
     <div class="slist">${list.length ? list.map(s => `<div class="sitem ${cur && s.id===cur.id?"cur":""}"><div><b>${esc(s.title||T("Senza titolo"))}</b><small>${T("Modificato {d}",{d:fmt(s.updated)})}</small></div>
-      <button class="btn" data-open="${s.id}">${T(cur && s.id===cur.id?"Aperto":"Apri")}</button><button class="btn" data-dup="${s.id}">${T("Duplica")}</button><button class="btn danger" data-del="${s.id}">${T("Elimina")}</button></div>`).join("")
+      <button class="btn" data-open="${esc(s.id)}">${T(cur && s.id===cur.id?"Aperto":"Apri")}</button><button class="btn" data-dup="${esc(s.id)}">${T("Duplica")}</button><button class="btn danger" data-del="${esc(s.id)}">${T("Elimina")}</button></div>`).join("")
       : `<p class="empty-note">${T("Nessun copione salvato.")} ${cur && cur.isSample ? T("Quello aperto è un esempio: appena lo modifichi viene salvato.") : ""}</p>`}</div>
     <p class="empty-note" style="padding:12px 0 0">${esc(T("I copioni privati restano su questo dispositivo. Per lavorarci da più dispositivi o con altre persone, condividili."))}</p>
     <div class="row"><button class="btn" data-close>${T("Chiudi")}</button></div></div>`);
@@ -2822,15 +2826,15 @@ async function renderProfile(){
         ${pfList===null ? `<p class="empty-note">${T("Caricamento dei copioni…")}</p>` :
           !list.length ? `<p class="empty-note">${n ? T("Nessun copione con questo titolo.") : T("Non hai ancora copioni salvati. Creane uno nuovo o importa un file .fountain o .fdx.")}</p>` :
           `<div class="cards">${list.map(x => `<div class="card ${cur && x.id===cur.id?"cur":""}">
-            <button class="card-open" data-po="${x.id}">${cur && x.id===cur.id ? `<span class="badge">${T("Aperto")}</span>` : ""}<b>${esc(x.title||T("Senza titolo"))}</b><small>${T("Modificato {d}",{d:fmt(x.updated)})}</small></button>
-            <div class="card-acts">${DB ? `<button data-pshare="${x.id}">${T("Condividi")}</button>` : ""}<button data-pd="${x.id}">${T("Duplica")}</button><button class="warn" data-px="${x.id}">${T("Elimina")}</button></div></div>`).join("")}</div>`}
+            <button class="card-open" data-po="${esc(x.id)}">${cur && x.id===cur.id ? `<span class="badge">${T("Aperto")}</span>` : ""}<b>${esc(x.title||T("Senza titolo"))}</b><small>${T("Modificato {d}",{d:fmt(x.updated)})}</small></button>
+            <div class="card-acts">${DB ? `<button data-pshare="${esc(x.id)}">${T("Condividi")}</button>` : ""}<button data-pd="${esc(x.id)}">${T("Duplica")}</button><button class="warn" data-px="${esc(x.id)}">${T("Elimina")}</button></div></div>`).join("")}</div>`}
       </div>
       ${DB ? `<div class="pf-sec"><h3>${T("Copioni condivisi")}</h3>
         ${pfShared===null ? `<p class="empty-note">${T("Caricamento dei copioni…")}</p>` :
           !pfShared.length ? `<p class="empty-note">${T("Nessun copione condiviso. Apri un tuo copione e usa Condividi: chi riceve il link può scriverci insieme a te.")}</p>` :
           `<div class="cards">${pfShared.filter(x => !pfQuery || (x.title||"").toLowerCase().includes(pfQuery.toLowerCase())).map(x => `<div class="card shared ${cur && cur.shared===x.id?"cur":""}">
-            <button class="card-open" data-pso="${x.id}"><span class="badge">${cur && cur.shared===x.id ? T("Aperto") : T("Condiviso")}</span><b>${esc(x.title||T("Senza titolo"))}</b><small>${esc(T("Ultima modifica: {n}, {d}",{n:x.byName||"?", d:fmt(x.updated)}))}</small></button>
-            <div class="card-acts"><button data-pslink="${x.id}">${T("Link")}</button><button class="warn" data-psx="${x.id}">${T(x.own ? "Elimina" : "Togli dalla lista")}</button></div></div>`).join("")}</div>`}
+            <button class="card-open" data-pso="${esc(x.id)}"><span class="badge">${cur && cur.shared===x.id ? T("Aperto") : T("Condiviso")}</span><b>${esc(x.title||T("Senza titolo"))}</b><small>${esc(T("Ultima modifica: {n}, {d}",{n:x.byName||"?", d:fmt(x.updated)}))}</small></button>
+            <div class="card-acts"><button data-pslink="${esc(x.id)}">${T("Link")}</button><button class="warn" data-psx="${esc(x.id)}">${T(x.own ? "Elimina" : "Togli dalla lista")}</button></div></div>`).join("")}</div>`}
       </div>` : ""}
       <div class="pf-sec"><h3>${T("Preferenze")}</h3>
         <div class="prefs">
@@ -3148,12 +3152,12 @@ function showRevisions(){
         ${canProd() ? `<button class="btn primary" data-rv="close">${T("Chiudi la revisione {c}",{c: revName(pr)})}</button><button class="btn" data-rv="unlock">${T("Sblocca")}</button>` : ""}
       </div>
       <p class="rv-p rv-small">${T("Chiudi la revisione dopo averla mandata alla troupe: gli asterischi ripartono da zero e le modifiche successive prendono il colore {c}.",{c: revName(pr+1)})}</p>
-      <div class="rv-list">${revs.slice().reverse().map(r => `<div class="rv-it">${chip(r.c)}<b>${esc(revName(r.c))}</b><span>${fmtD(r.at)}</span><button data-cmp="${r.vid}" data-nm="${esc(revName(r.c))}">${T("Confronta")}</button></div>`).join("")}</div>`;
+      <div class="rv-list">${revs.slice().reverse().map(r => `<div class="rv-it">${chip(r.c)}<b>${esc(revName(r.c))}</b><span>${fmtD(r.at)}</span><button data-cmp="${esc(r.vid)}" data-nm="${esc(revName(r.c))}">${T("Confronta")}</button></div>`).join("")}</div>`;
   overlay(`<div class="modal wide" role="dialog" aria-label="${T("Versioni e revisioni")}"><h3>${T("Versioni e revisioni")}</h3>
     <h4 class="rv-h">${T("Versioni")}</h4>
     <p class="rv-p rv-small">${T("Salva una fotografia del copione con un nome, per esempio prima di una consegna. Puoi confrontarla con il testo attuale o ripristinarla.")}</p>
     ${readOnly ? "" : `<div class="rv-new"><input id="rvName" placeholder="${T("Es. Bozza 3 – consegnata")}" maxlength="80"><button class="btn primary" data-rv="save">${T("Salva versione")}</button></div>`}
-    <div class="rv-list">${vs.length ? vs.map(v => `<div class="rv-it"><b>${esc(v.name)}</b><span>${fmtDT(v.at)}${v.by ? " · "+esc(v.by) : ""}</span><button data-cmp="${v.id}" data-nm="${esc(v.name)}">${T("Confronta")}</button>${readOnly ? "" : `<button data-rst="${v.id}">${T("Ripristina")}</button>`}</div>`).join("") : `<p class="empty-note" style="padding:4px 0">${T("Nessuna versione salvata.")}</p>`}</div>
+    <div class="rv-list">${vs.length ? vs.map(v => `<div class="rv-it"><b>${esc(v.name)}</b><span>${fmtDT(v.at)}${v.by ? " · "+esc(v.by) : ""}</span><button data-cmp="${esc(v.id)}" data-nm="${esc(v.name)}">${T("Confronta")}</button>${readOnly ? "" : `<button data-rst="${esc(v.id)}">${T("Ripristina")}</button>`}</div>`).join("") : `<p class="empty-note" style="padding:4px 0">${T("Nessuna versione salvata.")}</p>`}</div>
     <h4 class="rv-h">${T("Produzione")}</h4>${prod}
     <div class="row"><button class="btn" data-close>${T("Chiudi")}</button></div></div>`);
   const md = $("#overlay .modal");
@@ -3197,7 +3201,7 @@ async function showCompare(vid, name){
   const old = await xBody(vid); if (!old){ toast(T("Questa versione non è disponibile offline.")); return; }
   const now = readModel(), d = diffIdx(old.map(blockKey), now.map(blockKey));
   const out = []; let i = 0, j = 0, same = 0, add = 0, del = 0;
-  const row = (cls, r) => `<div class="cp ${cls} t-${r[0]}"><span class="cp-t">${esc(TYPES[r[0]]||"")}</span><span class="cp-x">${esc(r[1])}</span></div>`;
+  const row = (cls, r) => `<div class="cp ${cls} t-${TYPE_KEYS[r[0]] ? r[0] : "a"}"><span class="cp-t">${esc(TYPES[r[0]]||"")}</span><span class="cp-x">${esc(r[1])}</span></div>`;
   const flush = () => { if (same){ out.push(`<div class="cp-same">${T(same===1?"{n} elemento invariato":"{n} elementi invariati",{n:same})}</div>`); same = 0; } };
   while (i<old.length || j<now.length){
     if (i<old.length && d.delA.has(i)){ flush(); if (String(old[i][1]).trim()){ out.push(row("del", old[i])); del++; } i++; }
@@ -3247,7 +3251,7 @@ function renderNotes(L){
   all.sort((a,b) => (a.done - b.done) || ((pos[a.b] ?? 1e9) - (pos[b.b] ?? 1e9)) || a.at - b.at);
   L.innerHTML = all.map(n => { const i = pos[n.b]; return `<div class="nt${n.done?" done":""}">
     <button class="sc" ${i!==undefined ? `data-i="${i}"` : "disabled"}><span class="h"><b>${esc(n.x)}</b><i>${esc(n.by||"—")} · ${fmtDT(n.at)}${i===undefined ? " · "+T("riga eliminata") : ""}</i>${n.q ? `<i class="q">“${esc(n.q)}”</i>` : ""}</span></button>
-    <div class="nt-a"><button data-nd="${n.id}" aria-label="${T(n.done?"Riapri":"Fatto")}" title="${T(n.done?"Riapri":"Fatto")}">${n.done?"↺":"✓"}</button><button data-nx="${n.id}" aria-label="${T("Elimina")}" title="${T("Elimina")}">×</button></div></div>`; }).join("");
+    <div class="nt-a"><button data-nd="${esc(n.id)}" aria-label="${T(n.done?"Riapri":"Fatto")}" title="${T(n.done?"Riapri":"Fatto")}">${n.done?"↺":"✓"}</button><button data-nx="${esc(n.id)}" aria-label="${T("Elimina")}" title="${T("Elimina")}">×</button></div></div>`; }).join("");
 }
 $("#sideList").addEventListener("click", e => {
   const b = e.target.closest("[data-nd],[data-nx]"); if (!b) return;
